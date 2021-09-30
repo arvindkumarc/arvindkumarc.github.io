@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
 {% seo %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/brands.min.css">
     <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -23,13 +24,6 @@
 
         <p>{{ site.description | default: site.github.project_tagline }}</p>
 
-        {% if site.github.is_project_page %}
-        <p class="view">
-          <a href="{{ site.github.repository_url }}">Github</a>
-          <br><a target="_blank" href="https://twitter.com/arvindkumarc">Twitter</a>
-        </p>
-        {% endif %}
-
         {% if site.show_downloads %}
         <ul class="downloads">
           <li><a href="/arvindkumarc_profile.pdf">Download <strong>Resume</strong></a></li>
@@ -37,6 +31,14 @@
           <li><a target="_blank" href="https://medium.com/@arvindkumarc">Read <strong>Blogs</strong></a></li>
         </ul>
         {% endif %}
+        {% if site.github.is_user_page %}
+        <div style="text-align: center">
+          <a target="_blank" style="font-size: 2rem; color: gray" href="{{ site.github.repository_url }}" class="fab fa-github-square"></a>&nbsp;&nbsp;
+          <a target="_blank" style="font-size: 2rem; color: #5da9dd" href="https://twitter.com/arvindkumarc" class="fab fa-twitter-square"></a>&nbsp;&nbsp;
+          <a target="_blank" style="font-size: 2rem" href="https://www.linkedin.com/in/arvindkumarchinniah/" class="fab fa-linkedin"></a>
+        </div>
+        {% endif %}
+
       </header>
       <section>
 
