@@ -1,4 +1,0 @@
-This is a Brave Rewards publisher verification file.
-
-Domain: arvindkumarc.github.io
-Token: 728536c6af4f1476b897b47ae075585d5b2b3b053809ee931429b694f7f36726
