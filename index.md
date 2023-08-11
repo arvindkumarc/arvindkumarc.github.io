@@ -1,6 +1,6 @@
 ## Portfolio
 
-**15+ years** of experience in software design, development and delivery.
+**17+ years** of experience in software design, development and delivery.
 
 Full stack, functional enthusiast, Business driven data-science practitioner, lover of minimalist architecture.
 
