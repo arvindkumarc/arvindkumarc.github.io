@@ -6,5 +6,12 @@ services:
     platform: linux/amd64
     ports:
       - "4000:4000"
+      - "35729:35729"  # LiveReload port
     volumes:
-      - .:/src/.
+      - .:/src
+      - bundle_cache:/usr/local/bundle  # Cache gems between runs
+    environment:
+      - JEKYLL_ENV=development
+
+volumes:
+  bundle_cache:

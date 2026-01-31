@@ -1,55 +1,71 @@
 <!DOCTYPE html>
-<html lang="{{ site.lang | default: "en-US" }}">
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ site.description }}">
 
-{% seo %}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/brands.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface" />
-    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
-    <!--[if lt IE 9]>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        {% if site.logo %}
-          <img src="{{site.logo | relative_url}}" alt="Logo" />
-        {% endif %}
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        <p>{{ site.description | default: site.github.project_tagline }}</p>
-
-        {% if site.show_downloads %}
-        <ul class="downloads">
-          <li><a href="/arvindkumarc_profile.pdf" target="_blank">Download <strong>Resume</strong></a></li>
-          <li><a href="/projects.html">View <strong>Projects</strong></a></li>
-          <li><a href="/blogs/index.html">Read <strong>Blogs</strong></a></li>
-        </ul>
-        {% endif %}
-
-        {% if site.github.is_user_page %}
-        <div style="text-align: center">
-          <a target="_blank" style="font-size: 2rem; color: gray" href="{{ site.github.repository_url }}" class="fab fa-github-square"></a>&nbsp;&nbsp;
-          <a target="_blank" style="font-size: 2rem; color: #5da9dd" href="https://twitter.com/arvindkumarc" class="fab fa-twitter-square"></a>&nbsp;&nbsp;
-          <a target="_blank" style="font-size: 2rem" href="https://www.linkedin.com/in/arvindkumarchinniah/" class="fab fa-linkedin"></a>
-        </div>
-        {% endif %}
-
-      </header>
-      <section>
-
-      {{ content }}
-
-      </section>
-      <footer>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="{{ '/' | relative_url }}" class="nav-logo">{{ site.title }}</a>
+      <div class="nav-links">
+        <a href="{{ '/' | relative_url }}" class="nav-link">Home</a>
+        <a href="{{ '/projects.html' | relative_url }}" class="nav-link">Projects</a>
+        <a href="https://blog.arvindc.in" target="_blank" class="nav-link">Blog <i class="fas fa-external-link-alt fa-xs"></i></a>
+        <a href="{{ '/arvindkumarc_profile.pdf' | relative_url }}" target="_blank" class="nav-link">Resume <i class="fas fa-external-link-alt fa-xs"></i></a>
+      </div>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
     </div>
-    <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
-  </body>
+  </nav>
+
+  <main class="main">
+    <div class="container">
+      {{ content }}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="social-links">
+        <a href="https://github.com/arvindkumarc" target="_blank" aria-label="GitHub">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="https://twitter.com/arvindkumarc" target="_blank" aria-label="Twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/arvindkumarchinniah/" target="_blank" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="https://medium.com/@arvindkumarc" target="_blank" aria-label="Medium">
+          <i class="fab fa-medium"></i>
+        </a>
+      </div>
+      <p class="footer-text">&copy; {{ 'now' | date: '%Y' }} {{ site.title }}</p>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const toggle = document.querySelector('.nav-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    toggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+  </script>
+</body>
 </html>

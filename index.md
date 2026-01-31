@@ -1,20 +1,39 @@
-## Portfolio
+---
+layout: default
+title: Home
+---
 
-**17+ years** of experience in software design, development and delivery.
+# Hi, I'm Arvind Kumar C
 
-Full stack, functional enthusiast, Business driven data-science practitioner, lover of minimalist architecture.
+**2 decades** of experience in software design, development and delivery.
 
-**Engineering Manager Lead** at [Fluxon](https://www.fluxon.com)
+Full stack developer, functional programming enthusiast, business-driven data science practitioner, and lover of minimalist architecture.
 
-Was **Chief Engineer/CTO** at [Delium](https://www.delium.ai).
+---
 
-Was **Lead Consultant** at [ThoughtWorks](https://www.thoughtworks.com/en-in)
+## Currently
 
-Agile/Scrum, Continuous Delivery, TDD practices.
+**Director of Engineering** at [Fluxon](https://www.fluxon.com){:target="_blank"}
 
-## Merits
+---
 
-* High Scalable - Performance centric applications.
-* Managed to develop and deliver application that scaled to **~200 requests/sec** with minimal footprint in an m2 instance ¯\_(ツ)_/¯.
-* High grossing application which are also missing critical for everyday executions. Finance, everyday tracking + indenting processes.
-* Plan, Account, Deliver work across smaller teams (not more than 5).
+## Previously
+
+**Chief Engineer/CTO** at [Delium](https://www.delium.ai){:target="_blank"}
+
+**Lead Consultant** at [ThoughtWorks](https://www.thoughtworks.com/en-in){:target="_blank"}
+
+---
+
+## What I Do
+
+- High scalable, performance-centric applications
+- Managed to develop and deliver application that scaled to **~200 requests/sec** with minimal footprint
+- High grossing applications critical for everyday executions in Finance and tracking processes
+- Plan, Account, Deliver work across smaller teams
+
+---
+
+## Practices
+
+Agile/Scrum, Continuous Delivery, TDD
