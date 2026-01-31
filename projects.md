@@ -9,6 +9,26 @@ A selection of projects I've worked on throughout my career.
 
 ---
 
+#### Habitus
+
+Family habit building app - helps households build and track habits together with shared accountability and motivation.
+
+[Visit Site →](https://habitus.arvindc.in)
+
+*Tech: React, Supabase*
+
+---
+
+#### MSV Payroll
+
+Simple payroll tool built for a family friend's catering business - quick way to record programs, manage staff, and calculate daily wages.
+
+[Visit Site →](https://msv.arvindc.in)
+
+*Tech: React, Python, FastAPI*
+
+---
+
 #### Crypto based gaming platform
 
 Gaming platforms using Token Bonding Curve approach to adjust the price of Athletes within the platform, helping users who own these tokens to have demand and performance-based value.
