@@ -15,6 +15,6 @@ Agile/Scrum, Continuous Delivery, TDD practices.
 ## Merits
 
 * High Scalable - Performance centric applications.
-* Managed to develop and deliver application that scaled to **200 requests/min** with minimal footprint.
+* Managed to develop and deliver application that scaled to **~200 requests/sec** with minimal footprint in an m2 instance ¯\_(ツ)_/¯.
 * High grossing application which are also missing critical for everyday executions. Finance, everyday tracking + indenting processes.
 * Plan, Account, Deliver work across smaller teams (not more than 5).
