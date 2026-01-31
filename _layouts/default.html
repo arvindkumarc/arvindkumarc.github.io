@@ -14,6 +14,7 @@
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  
   <!-- Styles -->
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
 </head>
@@ -21,11 +22,24 @@
   <!-- 3D Background -->
   <canvas id="particles"></canvas>
 
-  <!-- Motorcycle animation at bottom -->
+  <!-- Vehicle animation at bottom -->
   <div class="motorcycle-container">
-    <span class="motorcycle">🏍️</span>
-    <span class="car">🚗</span>
-    <span class="dino">🦖</span>
+    <span class="motorcycle">
+      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Motorcycle/3D/motorcycle_3d.png" alt="motorcycle">
+    </span>
+    <span class="car">
+      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Racing%20car/3D/racing_car_3d.png" alt="F1 car">
+    </span>
+    <span class="dino">
+      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/T-rex/Color/t-rex_color.svg" alt="dinosaur">
+    </span>
+  </div>
+
+  <!-- Rocket launch -->
+  <div class="rocket-container">
+    <span class="rocket">
+      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Rocket/3D/rocket_3d.png" alt="rocket">
+    </span>
   </div>
 
   <nav class="nav">
@@ -619,5 +633,6 @@
       }
     })();
   </script>
-</body>
+
+  </body>
 </html>

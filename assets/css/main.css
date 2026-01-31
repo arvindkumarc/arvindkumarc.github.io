@@ -78,19 +78,20 @@ body {
 
 .motorcycle {
   position: absolute;
-  font-size: 2.5rem;
   bottom: 0;
-  line-height: 1;
   animation: ride 12s linear infinite;
   opacity: 0.8;
   filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2));
 }
 
+.motorcycle img {
+  height: 2.5rem;
+  width: auto;
+}
+
 .car {
   position: absolute;
-  font-size: 2.5rem;
   bottom: 0;
-  line-height: 1;
   animation: ride 8s linear infinite;
   animation-delay: 6s;
   opacity: 0.8;
@@ -98,17 +99,67 @@ body {
   right: -150px;
 }
 
+.car img {
+  height: 2.5rem;
+  width: auto;
+}
+
 .dino {
   position: absolute;
-  font-size: 3rem;
   bottom: 0;
-  line-height: 1;
   animation: ride 10s linear infinite, walk 0.15s ease-in-out infinite;
   animation-delay: 3s, 0s;
   opacity: 0.8;
   filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2));
   right: -150px;
   transform-origin: bottom center;
+}
+
+.dino img {
+  height: 3rem;
+  width: auto;
+}
+
+/* Rocket Launch */
+.rocket-container {
+  position: fixed;
+  left: 50px;
+  bottom: 0;
+  width: 100px;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.rocket {
+  position: absolute;
+  bottom: -100px;
+  left: 0;
+  animation: launch 3s ease-in forwards;
+  animation-delay: 14s;
+  opacity: 0;
+  filter: drop-shadow(0 2px 8px rgba(255, 100, 50, 0.4));
+}
+
+.rocket img {
+  height: 3rem;
+  width: auto;
+  transform: rotate(-45deg);
+}
+
+@keyframes launch {
+  0% {
+    bottom: -100px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    bottom: 110vh;
+    opacity: 1;
+  }
 }
 
 @keyframes walk {
@@ -138,6 +189,53 @@ body {
     animation: none;
     left: 50%;
     transform: translateX(-50%);
+  }
+}
+
+/* Mobile - faster animations */
+@media (max-width: 640px) {
+  .motorcycle {
+    animation: ride 6s linear infinite;
+  }
+
+  .motorcycle img {
+    height: 2rem;
+  }
+
+  .car {
+    animation: ride 4s linear infinite;
+    animation-delay: 3s;
+  }
+
+  .car img {
+    height: 2rem;
+  }
+
+  .dino {
+    animation: ride 5s linear infinite, walk 0.12s ease-in-out infinite;
+    animation-delay: 1.5s, 0s;
+  }
+
+  .dino img {
+    height: 2.5rem;
+  }
+
+  .rocket-container {
+    left: 20px;
+  }
+
+  .rocket {
+    animation: launch 2s ease-in forwards;
+    animation-delay: 7s;
+  }
+
+  .rocket img {
+    height: 2.5rem;
+  }
+
+  .motorcycle-container {
+    height: 60px;
+    bottom: 5px;
   }
 }
 
