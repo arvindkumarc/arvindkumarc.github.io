@@ -35,12 +35,6 @@
     </span>
   </div>
 
-  <!-- Rocket launch -->
-  <div class="rocket-container">
-    <span class="rocket">
-      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Rocket/3D/rocket_3d.png" alt="rocket">
-    </span>
-  </div>
 
   <nav class="nav">
     <div class="nav-container">
@@ -374,58 +368,7 @@
         return group;
       }
 
-      // 9. Rocket
-      function createRocket() {
-        const group = new THREE.Group();
-        const color = colors[Math.floor(Math.random() * colors.length)];
-
-        // Body
-        const body = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8),
-          createMaterial(color)
-        );
-        group.add(body);
-
-        // Nose cone
-        const nose = new THREE.Mesh(
-          new THREE.ConeGeometry(0.3, 0.6, 8),
-          createMaterial(color)
-        );
-        nose.position.y = 1.05;
-        group.add(nose);
-
-        // Fins
-        for (let i = 0; i < 3; i++) {
-          const fin = new THREE.Mesh(
-            new THREE.BoxGeometry(0.5, 0.4, 0.05),
-            createMaterial(color, 0.3)
-          );
-          const angle = (i / 3) * Math.PI * 2;
-          fin.position.set(Math.cos(angle) * 0.4, -0.5, Math.sin(angle) * 0.4);
-          fin.rotation.y = -angle;
-          group.add(fin);
-        }
-
-        // Flame (light orange/peach)
-        const flame = new THREE.Mesh(
-          new THREE.ConeGeometry(0.25, 0.6, 8),
-          new THREE.MeshBasicMaterial({
-            color: 0xfed7aa,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.35
-          })
-        );
-        flame.position.y = -1.05;
-        flame.rotation.x = Math.PI;
-        group.add(flame);
-
-        group.scale.setScalar(1.5);
-        group.userData.isRocket = true;
-        return group;
-      }
-
-      // 10. Black Hole (lighter version)
+      // 9. Black Hole (lighter version)
       function createBlackHole() {
         const group = new THREE.Group();
 
@@ -501,12 +444,12 @@
       const creators = [
         createSatellite, createPlanet, createAsteroid, createRobot,
         createJellyfish, createStarfish, createStar, createEarth,
-        createRocket, createBlackHole, createLeaf
+        createBlackHole, createLeaf
       ];
 
-      // One of each first (11), then 14 random extras (25 total)
+      // One of each first (10), then 15 random extras (25 total)
       for (let i = 0; i < 25; i++) {
-        const createFn = i < 11 ? creators[i] : creators[Math.floor(Math.random() * creators.length)];
+        const createFn = i < 10 ? creators[i] : creators[Math.floor(Math.random() * creators.length)];
         const obj = createFn();
 
         // Place objects on left or right side, avoiding center content area
@@ -583,12 +526,6 @@
             moon.position.z = Math.sin(time * 0.5) * 2;
           }
 
-          // Rocket flame flicker
-          if (obj.userData.isRocket && obj.children[4]) {
-            const flame = obj.children[4];
-            flame.scale.y = 1 + Math.sin(time * 10) * 0.3;
-            flame.material.opacity = 0.3 + Math.sin(time * 8) * 0.2;
-          }
 
           // Black hole spin
           if (obj.userData.isBlackHole) {

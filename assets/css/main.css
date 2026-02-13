@@ -126,47 +126,6 @@ body {
   width: auto;
 }
 
-/* Rocket Launch */
-.rocket-container {
-  position: fixed;
-  left: 50px;
-  bottom: 0;
-  width: 100px;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 10;
-  overflow: hidden;
-}
-
-.rocket {
-  position: absolute;
-  bottom: -100px;
-  left: 0;
-  animation: launch 3s ease-in forwards;
-  animation-delay: 14s;
-  opacity: 0;
-  filter: drop-shadow(0 2px 8px rgba(255, 100, 50, 0.4));
-}
-
-.rocket img {
-  height: 3rem;
-  width: auto;
-  transform: rotate(-45deg);
-}
-
-@keyframes launch {
-  0% {
-    bottom: -100px;
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  100% {
-    bottom: 110vh;
-    opacity: 1;
-  }
-}
 
 @keyframes walk {
   0%, 100% {
@@ -226,18 +185,6 @@ body {
     height: 2.5rem;
   }
 
-  .rocket-container {
-    left: 20px;
-  }
-
-  .rocket {
-    animation: launch 2s ease-in forwards;
-    animation-delay: 7s;
-  }
-
-  .rocket img {
-    height: 2.5rem;
-  }
 
   .motorcycle-container {
     height: 60px;
