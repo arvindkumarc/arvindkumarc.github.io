@@ -28,7 +28,7 @@ const BROWSER_HEADERS = {
 const KV_KEY = 'feeds-blob';
 const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 const MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
-const MAX_ITEMS = 2000;
+const MAX_ITEMS = 10000;
 
 const RSS_FEEDS = [
   { name: 'Lobsters', url: 'https://lobste.rs/rss' },
@@ -109,23 +109,31 @@ function parseRSS(xml, sourceName, limit) {
 async function fetchHN() {
   try {
     const res = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json', { cf: { cacheTtl: 60 } });
-    if (!res.ok) return [];
-    const ids = (await res.json()).slice(0, 60);
+    if (!res.ok) {
+      console.log(`[hn] topstories http ${res.status}`);
+      return [];
+    }
+    // Cap at 30 to stay within the free-tier 50 subrequest/invocation limit
+    // (30 item fetches + 1 list + ~10 other feeds + 5 devto tags ≈ 46).
+    const ids = (await res.json()).slice(0, 30);
     const items = await Promise.all(
       ids.map((id) =>
         fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { cf: { cacheTtl: 300 } })
           .then((r) => r.json())
-          .catch(() => null)
+          .catch((e) => { console.log(`[hn] item ${id} err ${e.message}`); return null; })
       )
     );
-    return items.filter((i) => i && i.url).map((i) => ({
+    const filtered = items.filter((i) => i && i.url);
+    console.log(`[hn] ids=${ids.length} fetched=${items.filter(Boolean).length} withUrl=${filtered.length}`);
+    return filtered.map((i) => ({
       title: i.title,
       url: i.url || `https://news.ycombinator.com/item?id=${i.id}`,
       source: 'Hacker News',
       meta: `${i.score || 0} pts · ${i.descendants || 0} comments`,
       date: i.time ? new Date(i.time * 1000).toISOString() : null,
     }));
-  } catch {
+  } catch (e) {
+    console.log(`[hn] err ${e.message}`);
     return [];
   }
 }
@@ -135,9 +143,13 @@ async function fetchDevTo() {
   await Promise.all(
     DEVTO_TAGS.map(async (tag) => {
       try {
-        const res = await fetch(`https://dev.to/api/articles?tag=${tag}&per_page=30&top=1`, { cf: { cacheTtl: 600 } });
-        if (!res.ok) return;
+        const res = await fetch(`https://dev.to/api/articles?tag=${tag}&per_page=30&top=1`, { headers: BROWSER_HEADERS, cf: { cacheTtl: 600 } });
+        if (!res.ok) {
+          console.log(`[devto] tag=${tag} http ${res.status}`);
+          return;
+        }
         const data = await res.json();
+        console.log(`[devto] tag=${tag} got=${data.length}`);
         data.forEach((a) => {
           all.push({
             title: a.title,
@@ -147,8 +159,8 @@ async function fetchDevTo() {
             date: a.published_at,
           });
         });
-      } catch {
-        // ignore single-tag failure
+      } catch (e) {
+        console.log(`[devto] tag=${tag} err ${e.message}`);
       }
     })
   );
@@ -158,10 +170,16 @@ async function fetchDevTo() {
 async function fetchRSSFeed(feed) {
   try {
     const res = await fetch(feed.url, { headers: BROWSER_HEADERS, cf: { cacheTtl: 600 } });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.log(`[rss] ${feed.name} http ${res.status}`);
+      return [];
+    }
     const xml = await res.text();
-    return parseRSS(xml, feed.name, 50);
-  } catch {
+    const items = parseRSS(xml, feed.name, 50);
+    console.log(`[rss] ${feed.name} xml=${xml.length}B parsed=${items.length}`);
+    return items;
+  } catch (e) {
+    console.log(`[rss] ${feed.name} err ${e.message}`);
     return [];
   }
 }
@@ -228,16 +246,16 @@ async function handleAggregated(request, env, ctx) {
     Date.now() - new Date(existing.lastRefresh).getTime() > REFRESH_INTERVAL_MS;
 
   if (stale) {
-    // Kick off a background refresh; serve whatever we have now (possibly empty).
-    if (ctx && typeof ctx.waitUntil === 'function') {
-      ctx.waitUntil(refreshBlob(env).catch(() => null));
-    }
-    // If we have nothing at all yet, do an inline refresh so the first visitor sees something.
     if (!existing) {
+      // Nothing cached yet → do an inline refresh so the first visitor sees something.
       const blob = await refreshBlob(env).catch(() => ({ items: [], lastRefresh: null }));
       return new Response(JSON.stringify(blob), {
         headers: { ...headers, 'Content-Type': 'application/json', 'X-Refresh': 'inline' },
       });
+    }
+    // Otherwise serve the stale blob and refresh in the background.
+    if (ctx && typeof ctx.waitUntil === 'function') {
+      ctx.waitUntil(refreshBlob(env).catch(() => null));
     }
   }
 
