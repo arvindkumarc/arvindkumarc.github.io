@@ -34,20 +34,6 @@
   <!-- 3D Background -->
   <canvas id="particles"></canvas>
 
-  <!-- Vehicle animation at bottom -->
-  <div class="motorcycle-container">
-    <span class="motorcycle">
-      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Motorcycle/3D/motorcycle_3d.png" alt="motorcycle">
-    </span>
-    <span class="car">
-      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Racing%20car/3D/racing_car_3d.png" alt="F1 car">
-    </span>
-    <span class="dino">
-      <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/T-rex/Color/t-rex_color.svg" alt="dinosaur">
-    </span>
-  </div>
-
-
   <nav class="nav">
     <div class="nav-container">
       <a href="{{ '/' | relative_url }}" class="nav-logo">
@@ -218,7 +204,8 @@
   </script>
 
   <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+  </script>
   <script>
     // Floating 3D Objects Background
     (function() {
@@ -237,23 +224,15 @@
       const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
       let colors = isDark() ? darkColors : lightColors;
 
-      // Helper: Create wireframe material (more transparent)
       function createMaterial(color, opacity = 0.25) {
-        return new THREE.MeshBasicMaterial({
-          color,
-          wireframe: true,
-          transparent: true,
-          opacity
-        });
+        return new THREE.MeshBasicMaterial({ color, wireframe: true, transparent: true, opacity });
       }
 
-      // Update all object colors on theme change
       function updateThreeColors(theme) {
         colors = theme === 'dark' ? darkColors : lightColors;
         objects.forEach(obj => {
           obj.traverse(child => {
             if (child.isMesh && child.material && child.material.color) {
-              // Pick a random color from the new palette
               const newColor = colors[Math.floor(Math.random() * colors.length)];
               child.material.color.setHex(newColor);
             }
@@ -261,463 +240,190 @@
         });
       }
 
-      window.addEventListener('themechange', (e) => {
-        updateThreeColors(e.detail.theme);
-      });
+      window.addEventListener('themechange', (e) => updateThreeColors(e.detail.theme));
 
-      // 1. Satellite
       function createSatellite() {
         const group = new THREE.Group();
         const color = colors[Math.floor(Math.random() * colors.length)];
-
-        // Body
-        const body = new THREE.Mesh(
-          new THREE.BoxGeometry(1, 0.6, 0.6),
-          createMaterial(color)
-        );
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 0.6), createMaterial(color));
         group.add(body);
-
-        // Solar panels
-        const panel1 = new THREE.Mesh(
-          new THREE.BoxGeometry(1.5, 0.8, 0.05),
-          createMaterial(color, 0.3)
-        );
-        panel1.position.x = 1.2;
-        group.add(panel1);
-
-        const panel2 = panel1.clone();
-        panel2.position.x = -1.2;
-        group.add(panel2);
-
-        // Antenna
-        const antenna = new THREE.Mesh(
-          new THREE.ConeGeometry(0.3, 0.5, 8),
-          createMaterial(color)
-        );
-        antenna.position.y = 0.5;
-        group.add(antenna);
-
+        const panel1 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.8, 0.05), createMaterial(color, 0.3));
+        panel1.position.x = 1.2; group.add(panel1);
+        const panel2 = panel1.clone(); panel2.position.x = -1.2; group.add(panel2);
+        const antenna = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.5, 8), createMaterial(color));
+        antenna.position.y = 0.5; group.add(antenna);
         group.scale.setScalar(1.5);
         return group;
       }
 
-      // 2. Planet with ring
       function createPlanet() {
         const group = new THREE.Group();
         const color = colors[Math.floor(Math.random() * colors.length)];
-
-        const planet = new THREE.Mesh(
-          new THREE.IcosahedronGeometry(1, 1),
-          createMaterial(color)
-        );
-        group.add(planet);
-
-        const ring = new THREE.Mesh(
-          new THREE.TorusGeometry(1.6, 0.1, 8, 32),
-          createMaterial(color, 0.3)
-        );
-        ring.rotation.x = Math.PI / 2.5;
-        group.add(ring);
-
+        group.add(new THREE.Mesh(new THREE.IcosahedronGeometry(1, 1), createMaterial(color)));
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.1, 8, 32), createMaterial(color, 0.3));
+        ring.rotation.x = Math.PI / 2.5; group.add(ring);
         group.scale.setScalar(1.2);
         return group;
       }
 
-      // 3. Asteroid
       function createAsteroid() {
         const color = colors[Math.floor(Math.random() * colors.length)];
-        const asteroid = new THREE.Mesh(
-          new THREE.DodecahedronGeometry(1, 0),
-          createMaterial(color)
-        );
+        const asteroid = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), createMaterial(color));
         asteroid.scale.setScalar(0.8 + Math.random() * 0.5);
         return asteroid;
       }
 
-      // 4. Robot head
       function createRobot() {
         const group = new THREE.Group();
         const color = colors[Math.floor(Math.random() * colors.length)];
-
-        // Head
-        const head = new THREE.Mesh(
-          new THREE.BoxGeometry(1.2, 1, 1),
-          createMaterial(color)
-        );
-        group.add(head);
-
-        // Eyes
+        group.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 1, 1), createMaterial(color)));
         const eyeGeo = new THREE.SphereGeometry(0.15, 8, 8);
         const eye1 = new THREE.Mesh(eyeGeo, createMaterial(0xffffff, 0.6));
-        eye1.position.set(-0.3, 0.2, 0.5);
-        group.add(eye1);
-
-        const eye2 = eye1.clone();
-        eye2.position.x = 0.3;
-        group.add(eye2);
-
-        // Antenna
-        const antenna = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.05, 0.05, 0.4, 8),
-          createMaterial(color)
-        );
-        antenna.position.y = 0.7;
-        group.add(antenna);
-
-        const tip = new THREE.Mesh(
-          new THREE.SphereGeometry(0.1, 8, 8),
-          createMaterial(0xffffff, 0.6)
-        );
-        tip.position.y = 0.95;
-        group.add(tip);
-
+        eye1.position.set(-0.3, 0.2, 0.5); group.add(eye1);
+        const eye2 = eye1.clone(); eye2.position.x = 0.3; group.add(eye2);
+        const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.4, 8), createMaterial(color));
+        antenna.position.y = 0.7; group.add(antenna);
+        const tip = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), createMaterial(0xffffff, 0.6));
+        tip.position.y = 0.95; group.add(tip);
         group.scale.setScalar(1.3);
         return group;
       }
 
-      // 5. Jellyfish
       function createJellyfish() {
         const group = new THREE.Group();
         const color = colors[Math.floor(Math.random() * colors.length)];
-
-        // Bell/dome
-        const bell = new THREE.Mesh(
-          new THREE.SphereGeometry(0.8, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
-          createMaterial(color, 0.5)
-        );
-        group.add(bell);
-
-        // Tentacles
+        group.add(new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), createMaterial(color, 0.5)));
         for (let i = 0; i < 6; i++) {
-          const tentacle = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.03, 0.01, 1.5, 6),
-            createMaterial(color, 0.3)
-          );
+          const tentacle = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.01, 1.5, 6), createMaterial(color, 0.3));
           const angle = (i / 6) * Math.PI * 2;
-          tentacle.position.set(
-            Math.cos(angle) * 0.4,
-            -0.8,
-            Math.sin(angle) * 0.4
-          );
-          tentacle.userData.wobbleOffset = i;
-          group.add(tentacle);
+          tentacle.position.set(Math.cos(angle) * 0.4, -0.8, Math.sin(angle) * 0.4);
+          tentacle.userData.wobbleOffset = i; group.add(tentacle);
         }
-
-        group.scale.setScalar(1.5);
-        group.userData.isJellyfish = true;
+        group.scale.setScalar(1.5); group.userData.isJellyfish = true;
         return group;
       }
 
-      // 6. Starfish
       function createStarfish() {
         const group = new THREE.Group();
         const color = colors[Math.floor(Math.random() * colors.length)];
-
-        // Create 5 arms
         for (let i = 0; i < 5; i++) {
-          const arm = new THREE.Mesh(
-            new THREE.ConeGeometry(0.25, 1, 6),
-            createMaterial(color)
-          );
+          const arm = new THREE.Mesh(new THREE.ConeGeometry(0.25, 1, 6), createMaterial(color));
           const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
           arm.position.set(Math.cos(angle) * 0.5, 0, Math.sin(angle) * 0.5);
-          arm.rotation.z = -Math.PI / 2;
-          arm.rotation.y = -angle;
-          group.add(arm);
+          arm.rotation.z = -Math.PI / 2; arm.rotation.y = -angle; group.add(arm);
         }
-
-        // Center
-        const center = new THREE.Mesh(
-          new THREE.SphereGeometry(0.3, 8, 8),
-          createMaterial(color)
-        );
-        group.add(center);
-
-        group.rotation.x = Math.PI / 2;
-        group.scale.setScalar(1.2);
+        group.add(new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), createMaterial(color)));
+        group.rotation.x = Math.PI / 2; group.scale.setScalar(1.2);
         return group;
       }
 
-      // 7. Star shape
       function createStar() {
         const color = colors[Math.floor(Math.random() * colors.length)];
-        const star = new THREE.Mesh(
-          new THREE.OctahedronGeometry(0.6, 0),
-          createMaterial(color, 0.5)
-        );
+        const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.6, 0), createMaterial(color, 0.5));
         star.scale.y = 1.5;
         return star;
       }
 
-      // 8. Earth
       function createEarth() {
         const group = new THREE.Group();
-
-        // Ocean layer (light blue)
-        const ocean = new THREE.Mesh(
-          new THREE.SphereGeometry(1.18, 32, 32),
-          new THREE.MeshBasicMaterial({
-            color: 0xbfdbfe, // Light blue ocean
-            wireframe: true,
-            transparent: true,
-            opacity: 0.3
-          })
-        );
-        group.add(ocean);
-
-        // Land masses (light green)
-        const land = new THREE.Mesh(
-          new THREE.SphereGeometry(1.2, 16, 16),
-          new THREE.MeshBasicMaterial({
-            color: 0xbbf7d0, // Light green land
-            wireframe: true,
-            transparent: true,
-            opacity: 0.25
-          })
-        );
-        group.add(land);
-
-        // Equator ring
-        const equator = new THREE.Mesh(
-          new THREE.TorusGeometry(1.25, 0.02, 8, 48),
-          new THREE.MeshBasicMaterial({
-            color: 0xbfdbfe, // Light blue
-            transparent: true,
-            opacity: 0.3
-          })
-        );
-        equator.rotation.x = Math.PI / 2;
-        group.add(equator);
-
-        // Atmosphere glow (very light blue)
-        const atmosphere = new THREE.Mesh(
-          new THREE.SphereGeometry(1.45, 20, 20),
-          new THREE.MeshBasicMaterial({
-            color: 0xdbeafe,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.1
-          })
-        );
-        group.add(atmosphere);
-
-        // Small moon
-        const moon = new THREE.Mesh(
-          new THREE.SphereGeometry(0.25, 12, 12),
-          new THREE.MeshBasicMaterial({
-            color: 0xe2e8f0,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.3
-          })
-        );
-        moon.position.set(2, 0.5, 0);
-        group.add(moon);
-
-        group.scale.setScalar(1.8);
-        group.userData.isEarth = true;
+        group.add(new THREE.Mesh(new THREE.SphereGeometry(1.18, 32, 32), new THREE.MeshBasicMaterial({ color: 0xbfdbfe, wireframe: true, transparent: true, opacity: 0.3 })));
+        group.add(new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), new THREE.MeshBasicMaterial({ color: 0xbbf7d0, wireframe: true, transparent: true, opacity: 0.25 })));
+        const equator = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.02, 8, 48), new THREE.MeshBasicMaterial({ color: 0xbfdbfe, transparent: true, opacity: 0.3 }));
+        equator.rotation.x = Math.PI / 2; group.add(equator);
+        group.add(new THREE.Mesh(new THREE.SphereGeometry(1.45, 20, 20), new THREE.MeshBasicMaterial({ color: 0xdbeafe, wireframe: true, transparent: true, opacity: 0.1 })));
+        const moon = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 12), new THREE.MeshBasicMaterial({ color: 0xe2e8f0, wireframe: true, transparent: true, opacity: 0.3 }));
+        moon.position.set(2, 0.5, 0); group.add(moon);
+        group.scale.setScalar(1.8); group.userData.isEarth = true;
         return group;
       }
 
-      // 9. Black Hole (lighter version)
       function createBlackHole() {
         const group = new THREE.Group();
-
-        // Event horizon (light purple center)
-        const core = new THREE.Mesh(
-          new THREE.SphereGeometry(0.5, 16, 16),
-          new THREE.MeshBasicMaterial({
-            color: 0xc4b5fd,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.3
-          })
-        );
-        group.add(core);
-
-        // Accretion disk rings (pastel purples)
+        group.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), new THREE.MeshBasicMaterial({ color: 0xc4b5fd, wireframe: true, transparent: true, opacity: 0.3 })));
         for (let i = 0; i < 3; i++) {
-          const ring = new THREE.Mesh(
-            new THREE.TorusGeometry(1 + i * 0.4, 0.08 - i * 0.02, 8, 32),
-            new THREE.MeshBasicMaterial({
-              color: [0xd8b4fe, 0xc4b5fd, 0xa5b4fc][i],
-              wireframe: true,
-              transparent: true,
-              opacity: 0.25 - i * 0.05
-            })
-          );
-          ring.rotation.x = Math.PI / 2.2;
-          ring.rotation.z = i * 0.2;
-          group.add(ring);
+          const ring = new THREE.Mesh(new THREE.TorusGeometry(1 + i * 0.4, 0.08 - i * 0.02, 8, 32),
+            new THREE.MeshBasicMaterial({ color: [0xd8b4fe, 0xc4b5fd, 0xa5b4fc][i], wireframe: true, transparent: true, opacity: 0.25 - i * 0.05 }));
+          ring.rotation.x = Math.PI / 2.2; ring.rotation.z = i * 0.2; group.add(ring);
         }
-
-        group.scale.setScalar(1.8);
-        group.userData.isBlackHole = true;
+        group.scale.setScalar(1.8); group.userData.isBlackHole = true;
         return group;
       }
 
-      // 11. Leaf
       function createLeaf() {
         const group = new THREE.Group();
-        const color = 0xbbf7d0; // Light green
-
-        // Leaf shape (elongated sphere)
-        const leaf = new THREE.Mesh(
-          new THREE.SphereGeometry(0.5, 8, 6),
-          createMaterial(color, 0.5)
-        );
-        leaf.scale.set(0.6, 1, 0.1);
-        group.add(leaf);
-
-        // Stem
-        const stem = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.02, 0.02, 0.6, 6),
-          createMaterial(color, 0.4)
-        );
-        stem.position.y = -0.7;
-        stem.rotation.z = 0.2;
-        group.add(stem);
-
-        // Center vein
-        const vein = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.01, 0.01, 0.8, 6),
-          createMaterial(color, 0.3)
-        );
-        vein.rotation.x = Math.PI / 2;
-        group.add(vein);
-
-        group.scale.setScalar(2);
-        group.userData.isLeaf = true;
+        const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 6), createMaterial(0xbbf7d0, 0.5));
+        leaf.scale.set(0.6, 1, 0.1); group.add(leaf);
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.6, 6), createMaterial(0xbbf7d0, 0.4));
+        stem.position.y = -0.7; stem.rotation.z = 0.2; group.add(stem);
+        const vein = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.8, 6), createMaterial(0xbbf7d0, 0.3));
+        vein.rotation.x = Math.PI / 2; group.add(vein);
+        group.scale.setScalar(2); group.userData.isLeaf = true;
         return group;
       }
 
-      // Create objects - one of each type first (motorcycle is CSS image at bottom)
-      const creators = [
-        createSatellite, createPlanet, createAsteroid, createRobot,
-        createJellyfish, createStarfish, createStar, createEarth,
-        createBlackHole, createLeaf
-      ];
+      const creators = [createSatellite, createPlanet, createAsteroid, createRobot, createJellyfish, createStarfish, createStar, createEarth, createBlackHole, createLeaf];
 
-      // One of each first (10), then 15 random extras (25 total)
       for (let i = 0; i < 25; i++) {
         const createFn = i < 10 ? creators[i] : creators[Math.floor(Math.random() * creators.length)];
         const obj = createFn();
-
-        // Place objects on left or right side, avoiding center content area
         const side = Math.random() > 0.5 ? 1 : -1;
-        const minDistance = 25; // Minimum distance from center
-        const maxDistance = 60; // Maximum distance from center
-        obj.position.x = side * (minDistance + Math.random() * (maxDistance - minDistance));
+        obj.position.x = side * (25 + Math.random() * 35);
         obj.position.y = (Math.random() - 0.5) * 80;
         obj.position.z = (Math.random() - 0.5) * 60 - 20;
-
-        // Random rotation
         obj.rotation.x = Math.random() * Math.PI;
         obj.rotation.y = Math.random() * Math.PI;
         obj.rotation.z = Math.random() * Math.PI;
-
-        // Animation data
-        obj.userData.rotSpeed = {
-          x: (Math.random() - 0.5) * 0.01,
-          y: (Math.random() - 0.5) * 0.01,
-          z: (Math.random() - 0.5) * 0.005
-        };
+        obj.userData.rotSpeed = { x: (Math.random() - 0.5) * 0.01, y: (Math.random() - 0.5) * 0.01, z: (Math.random() - 0.5) * 0.005 };
         obj.userData.floatSpeed = Math.random() * 0.3 + 0.2;
         obj.userData.floatOffset = Math.random() * Math.PI * 2;
         obj.userData.originalY = obj.position.y;
         obj.userData.originalX = obj.position.x;
-        // Drift within their side zone (subtle horizontal movement)
         obj.userData.driftAmplitude = 8 + Math.random() * 12;
-
-        objects.push(obj);
-        scene.add(obj);
+        objects.push(obj); scene.add(obj);
       }
 
-      // Mouse
       let mouseX = 0, mouseY = 0;
       document.addEventListener('mousemove', (e) => {
         mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
         mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
       });
 
-      // Animation
       let time = 0;
       function animate() {
         requestAnimationFrame(animate);
         time += 0.01;
-
-        objects.forEach((obj, i) => {
-          // Rotate
+        objects.forEach((obj) => {
           obj.rotation.x += obj.userData.rotSpeed.x;
           obj.rotation.y += obj.userData.rotSpeed.y;
           obj.rotation.z += obj.userData.rotSpeed.z;
-
-          // Float up/down
-          obj.position.y = obj.userData.originalY +
-            Math.sin(time * obj.userData.floatSpeed + obj.userData.floatOffset) * 3;
-
-          // Gentle horizontal oscillation (stay on their side)
-          obj.position.x = obj.userData.originalX +
-            Math.sin(time * 0.15 + obj.userData.floatOffset) * obj.userData.driftAmplitude;
-
-          // Jellyfish tentacle wobble
+          obj.position.y = obj.userData.originalY + Math.sin(time * obj.userData.floatSpeed + obj.userData.floatOffset) * 3;
+          obj.position.x = obj.userData.originalX + Math.sin(time * 0.15 + obj.userData.floatOffset) * obj.userData.driftAmplitude;
           if (obj.userData.isJellyfish) {
-            obj.children.forEach((child, j) => {
-              if (j > 0) { // Skip bell
-                child.rotation.x = Math.sin(time * 2 + j) * 0.3;
-                child.rotation.z = Math.cos(time * 2 + j) * 0.2;
-              }
-            });
+            obj.children.forEach((child, j) => { if (j > 0) { child.rotation.x = Math.sin(time * 2 + j) * 0.3; child.rotation.z = Math.cos(time * 2 + j) * 0.2; } });
           }
-
-          // Earth moon orbit (moon is now at index 4)
           if (obj.userData.isEarth && obj.children[4]) {
-            const moon = obj.children[4];
-            moon.position.x = Math.cos(time * 0.5) * 2;
-            moon.position.z = Math.sin(time * 0.5) * 2;
+            const moon = obj.children[4]; moon.position.x = Math.cos(time * 0.5) * 2; moon.position.z = Math.sin(time * 0.5) * 2;
           }
-
-
-          // Black hole spin
           if (obj.userData.isBlackHole) {
-            obj.children.forEach((child, j) => {
-              if (j > 0) { // Skip core
-                child.rotation.z += 0.02 * (j + 1);
-              }
-            });
+            obj.children.forEach((child, j) => { if (j > 0) child.rotation.z += 0.02 * (j + 1); });
           }
-
-          // Leaf gentle tumble
-          if (obj.userData.isLeaf) {
-            obj.rotation.z = Math.sin(time * 0.5) * 0.3;
-            obj.rotation.x = Math.cos(time * 0.3) * 0.2;
-          }
+          if (obj.userData.isLeaf) { obj.rotation.z = Math.sin(time * 0.5) * 0.3; obj.rotation.x = Math.cos(time * 0.3) * 0.2; }
         });
-
-        // Camera parallax
         camera.position.x += (mouseX * 5 - camera.position.x) * 0.02;
         camera.position.y += (-mouseY * 5 - camera.position.y) * 0.02;
         camera.lookAt(scene.position);
-
         renderer.render(scene, camera);
       }
-
       animate();
 
-      // Resize
       window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
-      // Reduced motion
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        objects.forEach(obj => {
-          obj.userData.rotSpeed = { x: 0, y: 0, z: 0 };
-          obj.userData.driftX = 0;
-          obj.userData.floatSpeed = 0;
-        });
+        objects.forEach(obj => { obj.userData.rotSpeed = { x: 0, y: 0, z: 0 }; obj.userData.floatSpeed = 0; });
       }
     })();
   </script>

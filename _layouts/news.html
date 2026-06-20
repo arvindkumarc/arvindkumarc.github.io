@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: "News Dashboard" }}</title>
+  <meta name="description" content="Engineer news dashboard — live feeds from HN, Dev.to, GitHub, YouTube, and Google News">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+
+  <!-- Theme detection -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
+  <!-- React + Babel for the dashboard -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.20.15/babel.min.js"></script>
+
+  <style>
+    /* Bridge CSS variables used by the dashboard */
+    :root {
+      --color-background-primary: var(--color-bg-card);
+      --color-background-secondary: var(--color-bg);
+      --color-text-primary: var(--color-text);
+      --color-text-tertiary: var(--color-text-muted);
+      --color-border-tertiary: var(--color-border);
+      --border-radius-lg: var(--radius-lg);
+    }
+
+    /* Override scroll-reveal animation from main.css */
+    .news-container {
+      opacity: 1 !important;
+      transform: none !important;
+      padding: 1.25rem 0 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .news-container h1, .news-container h2, .news-container h3 {
+      border-bottom: none !important;
+    }
+
+    /* Button base style for dashboard */
+    .news-dash-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 0.5px solid var(--color-border);
+      background: var(--color-bg-card);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .news-dash-btn:hover {
+      background: var(--color-accent-light);
+      border-color: var(--color-accent);
+    }
+    [data-theme="dark"] .news-dash-btn:hover {
+      background: var(--color-accent-light);
+    }
+
+    /* Reset custom cursor for news page (also dark mode) */
+    html, body, a, button, [role="button"], input, .nav-link, .nav-toggle {
+      cursor: default !important;
+    }
+    [data-theme="dark"] html, html[data-theme="dark"],
+    [data-theme="dark"] body, [data-theme="dark"] a, 
+    [data-theme="dark"] button, [data-theme="dark"] [role="button"],
+    [data-theme="dark"] input, [data-theme="dark"] .nav-link, [data-theme="dark"] .nav-toggle {
+      cursor: default !important;
+    }
+    a, button, [role="button"], input[type="submit"], .nav-link, .nav-toggle, .news-dash-btn {
+      cursor: pointer !important;
+    }
+    [data-theme="dark"] a, [data-theme="dark"] button,
+    [data-theme="dark"] [role="button"], [data-theme="dark"] input[type="submit"],
+    [data-theme="dark"] .nav-link, [data-theme="dark"] .nav-toggle {
+      cursor: pointer !important;
+    }
+
+    /* Responsive grid: 2 cols on desktop, 1 on mobile */
+    .news-section-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 768px) {
+      .news-section-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="{{ '/' | relative_url }}" class="nav-logo">
+        <img src="{{ '/images/195248.jpeg' | relative_url }}" alt="" class="nav-avatar">
+        {{ site.title }}
+      </a>
+      <div class="nav-links">
+        <a href="{{ '/' | relative_url }}" class="nav-link">Home</a>
+        <a href="https://blog.arvindc.in" target="_blank" class="nav-link">Blog <i class="fas fa-external-link-alt fa-xs"></i></a>
+        <a href="{{ '/arvindkumarc_profile.pdf' | relative_url }}" target="_blank" class="nav-link">Resume <i class="fas fa-external-link-alt fa-xs"></i></a>
+        <a href="{{ '/news' | relative_url }}" class="nav-link active">News <i class="fas fa-rss fa-xs"></i></a>
+      </div>
+      <button class="theme-toggle" aria-label="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="container">
+      <div id="news-dashboard" class="news-container"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="social-links">
+        <a href="https://github.com/arvindkumarc" target="_blank" aria-label="GitHub">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="https://twitter.com/arvindkumarc" target="_blank" aria-label="Twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/arvindkumarchinniah/" target="_blank" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="https://medium.com/@arvindkumarc" target="_blank" aria-label="Medium">
+          <i class="fab fa-medium"></i>
+        </a>
+      </div>
+      <p class="footer-text">&copy; {{ 'now' | date: '%Y' }} {{ site.title }}</p>
+    </div>
+  </footer>
+
+  <!-- Theme toggle -->
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
+    }
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      var newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+      if (!localStorage.getItem('theme')) setTheme(e.matches ? 'dark' : 'light');
+    });
+    document.querySelector('.nav-toggle').addEventListener('click', function() {
+      document.querySelector('.nav-links').classList.toggle('active');
+    });
+  </script>
+
+  <!-- ====== News Dashboard Component (React/JSX) ====== -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- IndexedDB-backed state (reads + pins) ---
+    function usePersistState() {
+      const [readUrls, setReadUrls] = useState(new Set());
+      const [pinnedUrls, setPinnedUrls] = useState(new Set());
+      const [ready, setReady] = useState(false);
+
+      useEffect(function() {
+        var db;
+        var request = indexedDB.open("news-dashboard", 2);
+        request.onupgradeneeded = function(e) {
+          db = e.target.result;
+          if (!db.objectStoreNames.contains("reads")) {
+            db.createObjectStore("reads", { keyPath: "url" });
+          }
+          if (!db.objectStoreNames.contains("pins")) {
+            db.createObjectStore("pins", { keyPath: "url" });
+          }
+        };
+        request.onsuccess = function(e) {
+          db = e.target.result;
+          window._newsDB = db;
+          // Load reads
+          var tx1 = db.transaction("reads", "readonly");
+          var r1 = tx1.objectStore("reads").getAllKeys();
+          r1.onsuccess = function() { setReadUrls(new Set(r1.result)); };
+          // Load pins
+          var tx2 = db.transaction("pins", "readonly");
+          var r2 = tx2.objectStore("pins").getAllKeys();
+          r2.onsuccess = function() { setPinnedUrls(new Set(r2.result)); setReady(true); };
+        };
+        request.onerror = function() { setReady(true); };
+      }, []);
+
+      function markRead(url) {
+        var db = window._newsDB;
+        if (!db) return;
+        var tx = db.transaction("reads", "readwrite");
+        tx.objectStore("reads").put({ url: url, timestamp: Date.now() });
+        setReadUrls(function(prev) { var next = new Set(prev); next.add(url); return next; });
+      }
+
+      function togglePin(url) {
+        var db = window._newsDB;
+        if (!db) return;
+        setPinnedUrls(function(prev) {
+          var next = new Set(prev);
+          if (next.has(url)) {
+            next.delete(url);
+            var tx = db.transaction("pins", "readwrite");
+            tx.objectStore("pins").delete(url);
+          } else {
+            next.add(url);
+            var tx = db.transaction("pins", "readwrite");
+            tx.objectStore("pins").put({ url: url, timestamp: Date.now() });
+          }
+          return next;
+        });
+      }
+
+      return { readUrls: readUrls, pinnedUrls: pinnedUrls, markRead: markRead, togglePin: togglePin, ready: ready };
+    }
+
+    // --- Cloudflare Worker RSS proxy ---
+    const RSS_PROXY = "https://rss-proxy.arvindc.workers.dev/";
+    const CORS = "https://api.allorigins.win/get?url=";
+
+    const SECTIONS = {
+      tech: {
+        label: "Tech & Dev",
+        icon: "fa-code",
+        color: "#7F77DD",
+        bg: "#EEEDFE",
+        layout: "unified",
+        feeds: [
+          { id: "hn", name: "Hacker News", type: "hn", icon: "fa-y-combinator" },
+          { id: "devto", name: "Dev.to", type: "devto", icon: "fa-dev", tags: ["ai", "webdev", "devops", "python", "machinelearning"] },
+          { id: "lobsters", name: "Lobsters", type: "rss", icon: "fa-rss", url: "https://lobste.rs/rss" },
+          { id: "arxiv_ai", name: "ArXiv AI", type: "rss", icon: "fa-graduation-cap", url: "https://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&max_results=50" },
+          { id: "aws", name: "AWS Blog", type: "rss", icon: "fa-cloud", url: "https://aws.amazon.com/blogs/aws/feed/" },
+          { id: "meta", name: "Meta Eng", type: "rss", icon: "fa-meta", url: "https://engineering.fb.com/feed/" },
+          { id: "netflix", name: "Netflix Tech", type: "rss", icon: "fa-film", url: "https://medium.com/feed/netflix-techblog" },
+          { id: "google_ai", name: "Google AI", type: "rss", icon: "fa-google", url: "https://blog.research.google/feeds/posts/default" },
+        ],
+      },
+      github: {
+        label: "GitHub Trending",
+        icon: "fa-github",
+        color: "#1D9E75",
+        bg: "#E1F5EE",
+        layout: "columns",
+        feeds: [
+          { id: "gh_py", name: "Python", type: "gh_rss", lang: "Python", icon: "fa-python" },
+          { id: "gh_js", name: "JavaScript", type: "gh_rss", lang: "JavaScript", icon: "fa-js" },
+          { id: "gh_ml", name: "AI / ML", type: "gh_rss", lang: "Jupyter Notebook", icon: "fa-brain" },
+          { id: "gh_all", name: "All Languages", type: "gh_rss", lang: "", icon: "fa-star" },
+        ],
+      },
+    };
+
+    function timeAgo(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "";
+      const diff = (Date.now() - d) / 1000;
+      if (diff < 60) return "just now";
+      if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+      if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+      return Math.floor(diff / 86400) + "d ago";
+    }
+
+    async function fetchHN(limit, endpoint) {
+      endpoint = endpoint || "topstories";
+      var res = await fetch("https://hacker-news.firebaseio.com/v0/" + endpoint + ".json");
+      var ids = (await res.json()).slice(0, limit || 60);
+      var items = await Promise.all(
+        ids.map(function(id) { return fetch("https://hacker-news.firebaseio.com/v0/item/" + id + ".json").then(function(r) { return r.json(); }); })
+      );
+      return items.filter(function(i) { return i && i.url; }).map(function(i) {
+        return {
+          title: i.title,
+          url: i.url || "https://news.ycombinator.com/item?id=" + i.id,
+          source: "Hacker News",
+          meta: (i.score || 0) + " pts · " + (i.descendants || 0) + " comments",
+          date: i.time ? new Date(i.time * 1000).toISOString() : null,
+        };
+      });
+    }
+
+    async function fetchDevTo(tags, limit = 50) {
+      const tag = tags[Math.floor(Math.random() * tags.length)];
+      const res = await fetch("https://dev.to/api/articles?tag=" + tag + "&per_page=" + limit + "&top=1");
+      const data = await res.json();
+      return data.map((a) => ({
+        title: a.title,
+        url: a.url,
+        source: "Dev.to · #" + (a.tag_list?.[0] || tag),
+        meta: "❤ " + a.positive_reactions_count + " · " + a.comments_count + " comments",
+        date: a.published_at,
+      }));
+    }
+
+    // --- RSS XML parser (handles RSS 2.0 and Atom) ---
+    function parseRSSXML(xml, sourceName, opts) {
+      var limit = (opts && opts.limit) || 50;
+      var doc;
+      try {
+        var parser = new DOMParser();
+        doc = parser.parseFromString(xml, "text/xml");
+      } catch (e) { return []; }
+      if (!doc || doc.querySelector("parsererror")) return [];
+
+      // Collect all candidate nodes with <title>
+      var nodes = doc.getElementsByTagName("item");
+      if (!nodes || !nodes.length) nodes = doc.getElementsByTagName("entry");
+      if (!nodes || !nodes.length) return [];
+
+      var items = [];
+      for (var i = 0; i < nodes.length && items.length < limit; i++) {
+        var el = nodes[i];
+        // title
+        var titleEl = el.getElementsByTagName("title");
+        var title = titleEl && titleEl.length ? (titleEl[0].textContent || "") : "";
+        if (!title) continue;
+
+        // link: try multiple formats
+        var link = "";
+        var links = el.getElementsByTagName("link");
+        if (links && links.length) {
+          for (var li = 0; li < links.length; li++) {
+            var l = links[li];
+            if (l.getAttribute("rel") === "alternate") { link = l.getAttribute("href") || ""; break; }
+            if (!link) link = l.getAttribute("href") || l.textContent || "";
+          }
+        }
+
+        // date
+        var date = "";
+        var pubDates = el.getElementsByTagName("pubDate");
+        var published = el.getElementsByTagName("published");
+        var updated = el.getElementsByTagName("updated");
+        if (pubDates && pubDates.length) date = pubDates[0].textContent || "";
+        else if (published && published.length) date = published[0].textContent || "";
+        else if (updated && updated.length) date = updated[0].textContent || "";
+
+        // author: dc:creator or author/name
+        var author = "";
+        var creators = el.getElementsByTagNameNS("*", "creator");
+        if (creators && creators.length) author = creators[0].textContent || "";
+        if (!author) {
+          var nameEls = el.getElementsByTagName("name");
+          if (nameEls && nameEls.length) author = nameEls[0].textContent || "";
+        }
+
+        items.push({ title: title, url: link, source: sourceName, meta: author, date: date || null });
+      }
+      return items;
+    }
+
+    // --- Fetch RSS via Cloudflare Worker proxy ---
+    async function fetchViaProxy(rssUrl) {
+      var res = await fetch(RSS_PROXY + "?url=" + encodeURIComponent(rssUrl));
+      if (!res.ok) throw new Error("proxy " + res.status);
+      return await res.text();
+    }
+
+    async function fetchRSS(url, sourceName, limit) {
+      try {
+        var xml = await fetchViaProxy(url);
+        return parseRSSXML(xml, sourceName, { limit: limit || 50 });
+      } catch (e) { return []; }
+    }
+
+    async function fetchGHRSS(lang, limit) {
+      limit = limit || 12;
+      var langSlug = lang ? lang.toLowerCase().replace(/ /g, "-") : "";
+      var url = lang
+        ? "https://mshibanami.github.io/GitHubTrendingRSS/daily/" + langSlug + ".xml"
+        : "https://mshibanami.github.io/GitHubTrendingRSS/daily/unknown.xml";
+      try {
+        var xml = await fetchViaProxy(url);
+        var items = parseRSSXML(xml, "GitHub · " + (lang || "All"), { limit: limit });
+        if (items.length > 0) {
+          items.forEach(function(item) {
+            if (item.meta) item.meta = item.meta.replace(/<[^>]+>/g, "").slice(0, 80);
+          });
+          return items;
+        }
+        throw new Error("empty");
+      } catch (e) {
+        // Fallback: scrape GitHub trending via allorigins
+        var ghUrl = lang
+          ? "https://github.com/trending/" + langSlug + "?since=daily"
+          : "https://github.com/trending?since=daily";
+        try {
+          var res = await fetch(CORS + encodeURIComponent(ghUrl));
+          var data = await res.json();
+          var html = data.contents || "";
+          var repoMatches = [...html.matchAll(/href="\/([\w-]+\/[\w.-]+)"/g)];
+          var seen = new Set();
+          return repoMatches
+            .filter(function(m) {
+              var path = m[1];
+              if (seen.has(path) || path.includes("trending") || path.split("/").length !== 2) return false;
+              seen.add(path);
+              return true;
+            })
+            .slice(0, limit)
+            .map(function(m) {
+              return { title: m[1], url: "https://github.com/" + m[1], source: "GitHub · " + (lang || "All"), meta: "trending today", date: null };
+            });
+        } catch (e2) { return []; }
+      }
+    }
+
+    const MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 3 months
+    function withinMaxAge(item) {
+      if (!item.date) return true; // keep undated items (e.g. GitHub trending)
+      var t = new Date(item.date).getTime();
+      if (isNaN(t)) return true;
+      return (Date.now() - t) <= MAX_AGE_MS;
+    }
+
+    async function loadFeed(feed) {
+      var items;
+      switch (feed.type) {
+        case "hn": items = await fetchHN(15, "topstories"); break;
+        case "devto": items = await fetchDevTo(feed.tags || ["webdev"]); break;
+        case "rss": items = await fetchRSS(feed.url, feed.name); break;
+        case "gh_rss": items = await fetchGHRSS(feed.lang); break;
+        default: return [];
+      }
+      return items.filter(withinMaxAge);
+    }
+
+    // Aggregated tech feed served from the worker's KV blob.
+    const AGGREGATED_URL = "https://rss-proxy.arvindc.workers.dev/aggregated";
+    async function fetchAggregated() {
+      try {
+        var res = await fetch(AGGREGATED_URL);
+        if (!res.ok) return [];
+        var data = await res.json();
+        var items = (data && data.items) || [];
+        return items.filter(withinMaxAge);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    const articleLinkS = { display: "block", padding: "10px 0", borderBottom: "0.5px solid var(--color-border-tertiary)", textDecoration: "none", color: "inherit" };
+    const articleThumbS = { width: "100%", height: 110, objectFit: "cover", borderRadius: 6, marginBottom: 6, display: "block" };
+    const articleTitleS = { margin: "0 0 4px", fontSize: 13.5, fontWeight: 500, lineHeight: 1.4, color: "var(--color-text-primary)" };
+    const articleMetaS = { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" };
+    const metaBrandS = (accent) => ({ fontSize: 11, color: accent, fontWeight: 500 });
+    const metaTextS = { fontSize: 11, color: "var(--color-text-tertiary)" };
+
+    const pinBtnS = { background: "none", border: "none", cursor: "pointer", fontSize: 14, padding: "0 4px 0 0", lineHeight: 1, color: "var(--color-text-muted)" };
+    const pinIconActiveS = { color: "#eab308", fontSize: 13 };
+    const pinIconInactiveS = { fontSize: 13 };
+    const cardRowS = { display: "flex", gap: 6, alignItems: "flex-start" };
+
+    function ArticleCard({ item, accent, isRead, onMarkRead, isPinned, onTogglePin, isFocused, isDimmed, ...rest }) {
+      var cardStyle = Object.assign({}, articleLinkS);
+      if (isRead) { cardStyle.opacity = 0.5; }
+      if (isDimmed) { cardStyle.opacity = 0.25; }
+      if (isFocused) { cardStyle.background = "var(--color-accent-light)"; cardStyle.borderRadius = 4; cardStyle.margin = "0 -4px"; cardStyle.padding = "0 4px"; }
+      var pinIconStyle = isPinned ? pinIconActiveS : pinIconInactiveS;
+      var pinIconClass = isPinned ? "fas fa-star" : "far fa-star";
+
+      function handleClick(e) {
+        if (onMarkRead) onMarkRead(item.url);
+      }
+
+      function handlePin(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onTogglePin) onTogglePin(item.url);
+      }
+
+      return (
+        <a href={item.url} target="_blank" rel="noopener noreferrer" style={cardStyle} onClick={handleClick} {...rest}>
+          <div style={cardRowS}>
+            <button onClick={handlePin} style={pinBtnS} title={isPinned ? "Unpin" : "Pin"}>
+              <i className={pinIconClass} style={pinIconStyle} />
+            </button>
+            <p style={articleTitleS}>{isRead ? "\u2713 " : ""}{item.title}</p>
+          </div>
+          <div style={articleMetaS}>
+            <span style={metaBrandS(accent)}>{item.source}</span>
+            {item.meta && <span style={metaTextS}>{item.meta}</span>}
+            {item.date && <span style={metaTextS}>{timeAgo(item.date)}</span>}
+          </div>
+        </a>
+      );
+    }
+
+    const feedColS = { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "14px 16px", minWidth: 0 };
+    const feedColHeadS = { display: "flex", alignItems: "center", gap: 6, marginBottom: 10 };
+    const feedColIconS = (c) => ({ fontSize: 15, color: c });
+    const feedColLabelS = (c) => ({ fontSize: 12, fontWeight: 500, color: c });
+    const skelRowS = { display: "flex", flexDirection: "column", gap: 10, padding: "4px 0" };
+    const skelBarS = { height: 12, background: "var(--color-background-secondary)", borderRadius: 4, marginBottom: 4 };
+    const skelSubS = { height: 10, background: "var(--color-background-secondary)", borderRadius: 4, width: "40%" };
+    const errS = { fontSize: 12, color: "var(--color-text-tertiary)", margin: 0, padding: "8px 0" };
+    const emptyS = { fontSize: 12, color: "var(--color-text-tertiary)", margin: 0 };
+
+    function FeedColumn({ feed, sectionColor, readUrls, markRead, pinnedUrls, togglePin }) {
+      const [items, setItems] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(false);
+
+      useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setError(false);
+        loadFeed(feed)
+          .then((data) => {
+            if (!cancelled) { setItems(data.slice(0, 10)); setLoading(false); }
+          })
+          .catch(() => {
+            if (!cancelled) { setError(true); setLoading(false); }
+          });
+        return () => { cancelled = true; };
+      }, [feed.id]);
+
+      return (
+        <div style={feedColS}>
+          <div style={feedColHeadS}>
+            <i className={"fab " + feed.icon} style={feedColIconS(sectionColor)} aria-hidden="true" />
+            <span style={feedColLabelS(sectionColor)}>{feed.name}</span>
+          </div>
+
+          {loading && (
+            <div style={skelRowS}>
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n}>
+                  <div style={Object.assign({}, skelBarS, { width: (70 + n * 5) + "%" })} />
+                  <div style={skelSubS} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {error && <p style={errS}>Couldn&apos;t load — try refreshing</p>}
+
+          {!loading && !error && items.length === 0 && <p style={emptyS}>No items found</p>}
+
+          {!loading && items.map((item, i) => (
+            <ArticleCard key={i} item={item} accent={sectionColor} isRead={readUrls ? readUrls.has(item.url) : false} onMarkRead={markRead} isPinned={pinnedUrls ? pinnedUrls.has(item.url) : false} onTogglePin={togglePin} />
+          ))}
+        </div>
+      );
+    }
+
+    // --- Unified feed: merge multiple feeds into one sorted list ---
+    const feedListS = { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "14px 16px" };
+    const searchInputS = { width: "100%", padding: "8px 12px", fontSize: 13, border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text-primary)", marginBottom: 12, outline: "none" };
+    const pinnedSectionS = { marginBottom: 14, paddingBottom: 10, borderBottom: "0.5px solid var(--color-border-tertiary)" };
+    const pinnedLabelS = { fontSize: 11, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 };
+    const countS = { fontSize: 11, color: "var(--color-text-tertiary)", marginTop: 8, textAlign: "center" };
+    const shortcutsS = { fontSize: 10, color: "var(--color-text-tertiary)", textAlign: "center", marginTop: 4, opacity: 0.6 };
+
+    // --- Histogram of items by day ---
+    const histoWrapS = { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "12px 16px", marginBottom: 12 };
+    const histoHeadS = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, fontSize: 11, color: "var(--color-text-tertiary)" };
+    const histoBarsS = { display: "flex", alignItems: "flex-end", gap: 2, height: 48 };
+    const histoBarS = (h, color, active, dim) => ({
+      width: "100%",
+      height: Math.max(2, h) + "px",
+      background: active ? color : (dim ? "var(--color-background-secondary)" : color),
+      opacity: active ? 1 : (dim ? 0.35 : 0.55),
+      borderRadius: 2,
+      cursor: "pointer",
+      transition: "opacity 0.15s ease",
+    });
+
+    function dayKey(d) {
+      var x = new Date(d);
+      return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0");
+    }
+
+    const histoTipS = {
+      position: "absolute",
+      bottom: "calc(100% + 6px)",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "var(--color-text-primary)",
+      color: "var(--color-background-primary)",
+      padding: "4px 8px",
+      borderRadius: 4,
+      fontSize: 11,
+      whiteSpace: "nowrap",
+      pointerEvents: "none",
+      zIndex: 10,
+      fontWeight: 500,
+    };
+
+    function Histogram({ items, sectionColor, selectedDay, onSelectDay, days }) {
+      const [hoverIdx, setHoverIdx] = useState(-1);
+      days = days || 30;
+      var buckets = {};
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+      var keys = [];
+      for (var i = days - 1; i >= 0; i--) {
+        var d = new Date(today); d.setDate(today.getDate() - i);
+        var k = dayKey(d);
+        buckets[k] = 0;
+        keys.push(k);
+      }
+      items.forEach(function(it) {
+        if (!it.date) return;
+        var k = dayKey(it.date);
+        if (k in buckets) buckets[k]++;
+      });
+      var max = Math.max(1, ...keys.map(function(k) { return buckets[k]; }));
+      var firstLabel = new Date(keys[0]).toLocaleDateString([], { month: "short", day: "numeric" });
+      var lastLabel = new Date(keys[keys.length - 1]).toLocaleDateString([], { month: "short", day: "numeric" });
+      var selectedLabel = selectedDay ? new Date(selectedDay).toLocaleDateString([], { month: "short", day: "numeric" }) : null;
+      var clearLinkS = { cursor: "pointer", color: sectionColor };
+      var handleClear = function() { onSelectDay(null); };
+
+      return (
+        <div style={histoWrapS}>
+          <div style={histoHeadS}>
+            <span>Activity · last {days}d</span>
+            {selectedLabel
+              ? <span style={clearLinkS} onClick={handleClear}>Showing {selectedLabel} · clear ✕</span>
+              : <span>{firstLabel} → {lastLabel}</span>}
+          </div>
+          <div style={histoBarsS}>
+            {keys.map(function(k, idx) {
+              var h = (buckets[k] / max) * 44;
+              var active = selectedDay === k;
+              var dim = selectedDay && !active;
+              var onBarClick = function() { onSelectDay(active ? null : k); };
+              var onEnter = function() { setHoverIdx(idx); };
+              var onLeave = function() { setHoverIdx(function(i) { return i === idx ? -1 : i; }); };
+              var dateLabel = new Date(k).toLocaleDateString([], { month: "short", day: "numeric" });
+              var tipText = dateLabel + " · " + buckets[k] + " item" + (buckets[k] === 1 ? "" : "s");
+              var wrapS = { position: "relative", flex: 1, display: "flex", alignItems: "flex-end", minWidth: 4 };
+              return (
+                <div key={k} style={wrapS} onMouseEnter={onEnter} onMouseLeave={onLeave}>
+                  {hoverIdx === idx && <div style={histoTipS}>{tipText}</div>}
+                  <div
+                    style={histoBarS(h, sectionColor, active, dim)}
+                    onClick={onBarClick}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function UnifiedFeed({ feeds, sectionColor, readUrls, markRead, pinnedUrls, togglePin, searchQuery, sourceFilter, hideRead, hidePinned }) {
+      const [allItems, setAllItems] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(false);
+      const [focusIdx, setFocusIdx] = useState(-1);
+      const [displayCount, setDisplayCount] = useState(30);
+      const [selectedDay, setSelectedDay] = useState(null);
+      const PAGE_SIZE = 30;
+
+      useEffect(function() {
+        var cancelled = false;
+        setLoading(true);
+        setError(false);
+        setFocusIdx(-1);
+        fetchAggregated()
+          .then(function(items) {
+            if (cancelled) return;
+            // worker already dedupes/sorts, but enforce desc sort defensively
+            var sorted = items.slice().sort(function(a, b) {
+              if (!a.date && !b.date) return 0;
+              if (!a.date) return 1;
+              if (!b.date) return -1;
+              return new Date(b.date) - new Date(a.date);
+            });
+            setAllItems(sorted);
+            setLoading(false);
+          })
+          .catch(function() {
+            if (!cancelled) { setError(true); setLoading(false); }
+          });
+        return function() { cancelled = true; };
+      }, []);
+
+      // Filter by search query (title + source) and source filter.
+      // `filteredForHisto` excludes the day filter so the histogram still
+      // shows all days even when a day is selected.
+      var q = (searchQuery || "").toLowerCase();
+      var s = sourceFilter || "";
+      var filteredForHisto = allItems;
+      if (q || s) {
+        filteredForHisto = allItems.filter(function(item) {
+          var matchSearch = !q || item.title.toLowerCase().indexOf(q) !== -1 || item.source.toLowerCase().indexOf(q) !== -1;
+          var matchSource = !s || item.source.indexOf(s) !== -1;
+          return matchSearch && matchSource;
+        });
+      }
+      var filtered = filteredForHisto;
+      if (selectedDay) {
+        filtered = filtered.filter(function(item) {
+          return item.date && dayKey(item.date) === selectedDay;
+        });
+      }
+
+      // Slice to display count
+      var shownItems = filtered.slice(0, displayCount);
+      var hasMore = filtered.length > displayCount;
+
+      // Apply hide/show toggles
+      var pinnedItems = shownItems.filter(function(item) { return pinnedUrls && pinnedUrls.has(item.url); });
+      var unpinnedItems = shownItems.filter(function(item) { return !pinnedUrls || !pinnedUrls.has(item.url); });
+
+      if (hideRead) {
+        pinnedItems = pinnedItems.filter(function(item) { return !readUrls || !readUrls.has(item.url); });
+        unpinnedItems = unpinnedItems.filter(function(item) { return !readUrls || !readUrls.has(item.url); });
+      }
+      if (hidePinned) {
+        pinnedItems = [];
+      }
+
+      // Keyboard nav
+      var visibleCount = pinnedItems.length + unpinnedItems.length;
+      useEffect(function() {
+        function onKey(e) {
+          if (e.target.tagName === "INPUT") return;
+          if (e.key === "j" || e.key === "ArrowDown") {
+            e.preventDefault();
+            setFocusIdx(function(i) { return Math.min(i + 1, visibleCount - 1); });
+          } else if (e.key === "k" || e.key === "ArrowUp") {
+            e.preventDefault();
+            setFocusIdx(function(i) { return Math.max(i - 1, 0); });
+          } else if ((e.key === "o" || e.key === "Enter") && focusIdx >= 0) {
+            e.preventDefault();
+            var allVisible = pinnedItems.concat(unpinnedItems);
+            if (allVisible[focusIdx]) window.open(allVisible[focusIdx].url, "_blank");
+            if (allVisible[focusIdx] && markRead) markRead(allVisible[focusIdx].url);
+          }
+        }
+        window.addEventListener("keydown", onKey);
+        return function() { window.removeEventListener("keydown", onKey); };
+      }, [visibleCount, focusIdx, pinnedItems, unpinnedItems]);
+
+      // Scroll focused item into view (defer until DOM updated)
+      useEffect(function() {
+        if (focusIdx >= 0) {
+          setTimeout(function() {
+            var el = document.querySelector('[data-focus="true"]');
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 50);
+        }
+      }, [focusIdx]);
+
+      // Build items with focus flag
+      var allVisible = pinnedItems.concat(unpinnedItems);
+      var renderItems = allVisible.map(function(item, idx) {
+        return React.createElement(ArticleCard, {
+          key: item.url,
+          item: item,
+          accent: sectionColor,
+          isRead: readUrls ? readUrls.has(item.url) : false,
+          onMarkRead: markRead,
+          isPinned: pinnedUrls ? pinnedUrls.has(item.url) : false,
+          onTogglePin: togglePin,
+          isFocused: idx === focusIdx,
+          "data-focus": idx === focusIdx ? "true" : undefined,
+        });
+      });
+
+      var loadMoreBtn = !loading && hasMore ? React.createElement("button", {
+        key: "loadmore",
+        className: "news-dash-btn",
+        onClick: function() { setDisplayCount(function(c) { return c + PAGE_SIZE; }); },
+        style: { display: "block", width: "100%", marginTop: 10, justifyContent: "center" }
+      }, "Show more (" + (filtered.length - displayCount) + " remaining)") : null;
+
+      var pinnedEls = pinnedItems.length > 0 ? React.createElement("div", { style: pinnedSectionS, key: "pinned" },
+        React.createElement("p", { style: pinnedLabelS }, "\u2B50 Pinned"),
+        renderItems.slice(0, pinnedItems.length)
+      ) : null;
+
+      var unpinnedEls = renderItems.slice(pinnedItems.length);
+
+      return React.createElement("div", null,
+        !loading && allItems.length > 0 && React.createElement(Histogram, {
+          items: filteredForHisto,
+          sectionColor: sectionColor,
+          selectedDay: selectedDay,
+          onSelectDay: setSelectedDay,
+          days: 30,
+        }),
+        React.createElement("div", { style: feedListS },
+        loading && React.createElement("div", { style: skelRowS },
+          [1, 2, 3, 4, 5, 6].map(function(n) {
+            return React.createElement("div", { key: n },
+              React.createElement("div", { style: Object.assign({}, skelBarS, { width: (60 + n * 4) + "%" }) }),
+              React.createElement("div", { style: skelSubS })
+            );
+          })
+        ),
+        error && React.createElement("p", { style: errS }, "Couldn\u2019t load \u2014 try refreshing"),
+        !loading && !error && allVisible.length === 0 && React.createElement("p", { style: emptyS }, "No items found"),
+        !loading && pinnedEls,
+        !loading && unpinnedEls,
+        !loading && allVisible.length > 0 && React.createElement("p", { style: countS }, allVisible.length + " items" + (q ? " matching \u201C" + searchQuery + "\u201D" : "")),
+        loadMoreBtn,
+        !loading && React.createElement("p", { style: shortcutsS }, "j/k: navigate \u00B7 o/Enter: open \u00B7 \u2B50: pin")
+        )
+      );
+    }
+
+    const secHeader = (open) => ({ display: "flex", alignItems: "center", gap: 10, marginBottom: open ? 14 : 0, cursor: "pointer", userSelect: "none" });
+    const secIconBox = (bg) => ({ width: 30, height: 30, borderRadius: 8, background: bg, display: "flex", alignItems: "center", justifyContent: "center" });
+    const secIcon = (c) => ({ fontSize: 16, color: c });
+    const secTitle = { margin: 0, fontSize: 15, fontWeight: 500, color: "var(--color-text-primary)", flex: 1 };
+    const secBtn = { background: "none", border: "none", cursor: "pointer", padding: "4px 6px", color: "var(--color-text-tertiary)", fontSize: 14 };
+    const secChev = { fontSize: 14, color: "var(--color-text-tertiary)" };
+    const secWrap = { marginBottom: "2rem" };
+
+    function Section({ id, section, readUrls, markRead, pinnedUrls, togglePin, searchQuery, sourceFilter, hideRead, hidePinned }) {
+      const [open, setOpen] = useState(true);
+      const [refreshKey, setRefreshKey] = useState(0);
+
+      return (
+        <div style={secWrap}>
+          <div style={secHeader(open)} onClick={() => setOpen((v) => !v)}>
+            <div style={secIconBox(section.bg)}>
+              <i className={"fas " + section.icon} style={secIcon(section.color)} aria-hidden="true" />
+            </div>
+            <h2 style={secTitle}>{section.label}</h2>
+            <button onClick={(e) => { e.stopPropagation(); setRefreshKey((k) => k + 1); }} style={secBtn} title="Refresh">
+              <i className="fas fa-rotate-right" aria-hidden="true" />
+            </button>
+            <i className={"fas " + (open ? "fa-chevron-up" : "fa-chevron-down")} style={secChev} aria-hidden="true" />
+          </div>
+
+          {open && section.layout === "unified" && (
+            <div key={refreshKey}>
+              <UnifiedFeed key={refreshKey} feeds={section.feeds} sectionColor={section.color} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} searchQuery={searchQuery} sourceFilter={sourceFilter} hideRead={hideRead} hidePinned={hidePinned} />
+            </div>
+          )}
+
+          {open && section.layout !== "unified" && (
+            <div key={refreshKey} className="news-section-grid">
+              {section.feeds.map((feed) => (
+                <FeedColumn key={feed.id + "-" + refreshKey} feed={feed} sectionColor={section.color} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} />
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const headerBar = { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.75rem", paddingBottom: "0.75rem", borderBottom: "0.5px solid var(--color-border-tertiary)" };
+    const headerH1 = { margin: 0, fontSize: 20, fontWeight: 500, color: "var(--color-text-primary)" };
+    const headerIcon = { fontSize: 18, marginRight: 8, verticalAlign: -2 };
+    const headerSub = { margin: "2px 0 0", fontSize: 12, color: "var(--color-text-tertiary)" };
+    const footerS = { fontSize: 11, color: "var(--color-text-tertiary)", textAlign: "center", marginTop: "1rem" };
+
+    const searchBarS = { width: "100%", maxWidth: 420, padding: "8px 12px", fontSize: 13, border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text-primary)", outline: "none" };
+    const searchWrapS = { marginBottom: "1.25rem" };
+    const filterPillsS = { display: "flex", gap: 6, flexWrap: "wrap", marginBottom: "1.25rem" };
+    const pillS = { fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 20, border: "0.5px solid var(--color-border)", background: "transparent", color: "var(--color-text-muted)", cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s ease" };
+    const pillActiveS = { fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 20, border: "0.5px solid var(--color-accent)", background: "var(--color-accent-light)", color: "var(--color-accent)", cursor: "pointer", fontFamily: "inherit" };
+    const pillSepS = { margin: "0 4px", color: "var(--color-border)", fontSize: 14, alignSelf: "center" };
+
+    // Derive all unique source names from the tech section feeds
+    var ALL_SOURCES = SECTIONS.tech.feeds.map(function(f) { return f.name; });
+
+    function App() {
+      const [lastRefresh, setLastRefresh] = useState(new Date());
+      const [globalKey, setGlobalKey] = useState(0);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [sourceFilter, setSourceFilter] = useState('');
+      const [hideRead, setHideRead] = useState(false);
+      const [hidePinned, setHidePinned] = useState(false);
+      const { readUrls, pinnedUrls, markRead, togglePin, ready } = usePersistState();
+
+      const refreshAll = () => {
+        setGlobalKey((k) => k + 1);
+        setLastRefresh(new Date());
+      };
+
+      useEffect(() => {
+        const id = setInterval(refreshAll, 30 * 60 * 1000);
+        return () => clearInterval(id);
+      }, []);
+
+      return (
+        <div>
+          <div style={headerBar}>
+            <div>
+              <h1 style={headerH1}>
+                <i className="fas fa-border-all" style={headerIcon} aria-hidden="true" />
+                Your feed
+              </h1>
+              <p style={headerSub}>
+                Updated {lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · auto-refreshes every 30 min
+              </p>
+            </div>
+            <button onClick={refreshAll} className="news-dash-btn">
+              <i className="fas fa-rotate-right" aria-hidden="true" />
+              Refresh all
+            </button>
+          </div>
+
+          <div style={searchWrapS}>
+            <input
+              type="text"
+              placeholder="Search across all feeds (title or source)..."
+              style={searchBarS}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div style={filterPillsS}>
+            <button
+              style={sourceFilter === '' ? pillActiveS : pillS}
+              onClick={() => setSourceFilter('')}
+            >All</button>
+            {ALL_SOURCES.map(function(src) {
+              return (
+                <button
+                  key={src}
+                  style={sourceFilter === src ? pillActiveS : pillS}
+                  onClick={() => setSourceFilter(sourceFilter === src ? '' : src)}
+                >{src}</button>
+              );
+            })}
+            <span style={pillSepS}>|</span>
+            <button
+              style={hideRead ? pillActiveS : pillS}
+              onClick={() => setHideRead(function(v) { return !v; })}
+            >{hideRead ? "✓ Showing unread" : "Hide read"}</button>
+            <button
+              style={hidePinned ? pillActiveS : pillS}
+              onClick={() => setHidePinned(function(v) { return !v; })}
+            >{hidePinned ? "★ Pinned hidden" : "Hide pinned"}</button>
+          </div>
+
+          {Object.entries(SECTIONS).map(([id, section]) => (
+            <Section key={id + "-" + globalKey} id={id} section={section} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} searchQuery={searchQuery} sourceFilter={sourceFilter} hideRead={hideRead} hidePinned={hidePinned} />
+          ))}
+
+          <p style={footerS}>
+            Sources: Hacker News · Dev.to · Lobsters · Reddit · ArXiv · GitHub Trending
+          </p>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("news-dashboard"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
