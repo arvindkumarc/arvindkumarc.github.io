@@ -23,4 +23,4 @@ Done — see `_layouts/news.html`:
 ## Notes for the worker
 
 - The Cloudflare worker (`cloudflare/rss-proxy/`) currently emits structured `points` / `comments` / `author` / `hnId` for HN and Dev.to. RSS feeds emit `author` only. The aggregated KV blob refreshes on a 15-minute cron, plus background refresh on stale serve.
-- `ALLOWED_ORIGINS` in `src/index.js` includes prod hosts (`arvindkumarc.github.io`, `arvindc.in`, `www.arvindc.in`) plus localhost on 4000/8080 for Jekyll/other local dev.
+- `ALLOWED_ORIGINS` in `src/index.js` is locked to prod hosts (`arvindkumarc.github.io`, `arvindc.in`, `www.arvindc.in`). Re-add localhost entries when local dev is needed; revert before deploy.
