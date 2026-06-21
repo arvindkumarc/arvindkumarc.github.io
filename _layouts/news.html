@@ -799,6 +799,30 @@
       var pts = Math.max(item.points || 0, 20); // floor so RSS-only items can compete
       return pts * recency * sourceWeight(item.source);
     }
+    // Source-diversity cap: no source occupies more than `perSourceMax` of the
+    // first `topN` items. Surplus slides further down. Preserves date order
+    // both within the diverse top and within the tail.
+    function sourceKey(item) {
+      if (!item || !item.source) return "";
+      // "Dev.to · #ai" → "Dev.to"; "Hacker News · Lobsters" (post-merge) → "Hacker News"
+      return item.source.split(" · ")[0];
+    }
+    function diversifyTop(items, perSourceMax, topN) {
+      var top = [], rest = [], counts = {};
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        var key = sourceKey(it);
+        var used = counts[key] || 0;
+        if (top.length < topN && used < perSourceMax) {
+          top.push(it);
+          counts[key] = used + 1;
+        } else {
+          rest.push(it);
+        }
+      }
+      return top.concat(rest);
+    }
+
     function pickHeroes(items, readUrls, n) {
       var now = Date.now();
       var scored = items.map(function(it) { return { item: it, score: heatScore(it, now) }; })
@@ -1264,8 +1288,12 @@
       var heroes = (q || s || selectedDay || hideRead || hidePinned) ? [] : pickHeroes(allItems, null, 4);
       var heroUrls = new Set(heroes.map(function(h) { return h.url; }));
 
-      var shownItems = filtered.slice(0, displayCount);
-      var hasMore = filtered.length > displayCount;
+      // Diversify the top of the firehose so a single fast source (HN, Dev.to,
+      // an ArXiv batch) can't squat the lede. No source > 3 of the first 20.
+      // A source filter narrows to one source anyway — skip the cap then.
+      var ordered = s ? filtered : diversifyTop(filtered, 3, 20);
+      var shownItems = ordered.slice(0, displayCount);
+      var hasMore = ordered.length > displayCount;
 
       // Remove unpinned hero items from the regular feed to avoid duplication.
       // Pinned heroes stay — user-intent wins; they appear in both Top today and the Pinned strip.
