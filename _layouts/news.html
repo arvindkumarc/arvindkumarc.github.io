@@ -377,6 +377,18 @@
       font-weight: 500;
     }
 
+    /* Touch-friendly histogram bars: keep visual size, expand tappable area
+       vertically. Horizontally bump min-width on narrow screens. */
+    @media (hover: none), (max-width: 640px) {
+      .news-histo-bar {
+        min-width: 8px !important;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        margin-top: -8px;
+        margin-bottom: -8px;
+      }
+    }
+
     /* Two-column page layout: feed left, GitHub rail right.
        Mobile (< 980px): news (hero + firehose) leads; GitHub rail stacks below. */
     .news-layout {
@@ -1087,7 +1099,7 @@
               var tipText = dateLabel + " · " + buckets[k] + " item" + (buckets[k] === 1 ? "" : "s");
               var wrapS = { position: "relative", flex: 1, display: "flex", alignItems: "flex-end", minWidth: 4 };
               return (
-                <div key={k} style={wrapS} onMouseEnter={onEnter} onMouseLeave={onLeave}>
+                <div key={k} className="news-histo-bar" style={wrapS} onMouseEnter={onEnter} onMouseLeave={onLeave}>
                   {hoverIdx === idx && <div style={histoTipS}>{tipText}</div>}
                   <div
                     style={histoBarS(h, sectionColor, active, dim)}
@@ -1446,7 +1458,7 @@
     const headerIcon = { fontSize: 18, marginRight: 6, verticalAlign: -1, color: "var(--color-accent)", fontStyle: "normal" };
     const headerTag = { margin: 0, fontSize: 12, color: "var(--color-text-muted)", fontStyle: "italic", fontFamily: "Georgia, 'Times New Roman', serif" };
     const headerSub = { margin: 0, fontSize: 11, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "1.3px", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontWeight: 500, fontVariantNumeric: "tabular-nums" };
-    const headerRightS = { display: "flex", alignItems: "center", gap: 8 };
+    const headerRightS = { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" };
     const headerDividerS = { color: "var(--color-border)", margin: "0 2px" };
     const iconBtnS = { width: 32, height: 32, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" };
     const colophonS = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "8px 0 4px", marginTop: 8, borderTop: "0.5px solid var(--color-border-tertiary)", fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", flexWrap: "wrap" };
@@ -1462,7 +1474,7 @@
     const kebabBtnS = { width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text)", cursor: "pointer", flexShrink: 0, position: "relative" };
     const kebabBtnActiveS = Object.assign({}, kebabBtnS, { borderColor: "var(--color-accent)", color: "var(--color-accent)" });
     const filterDotS = { position: "absolute", top: 4, right: 4, width: 6, height: 6, borderRadius: "50%", background: "var(--color-accent)" };
-    const popoverS = { position: "absolute", top: "calc(100% + 6px)", right: 0, minWidth: 280, maxWidth: 360, background: "var(--color-bg-card)", border: "0.5px solid var(--color-border)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 6px 24px rgba(0,0,0,0.08)", zIndex: 50 };
+    const popoverS = { position: "absolute", top: "calc(100% + 6px)", right: 0, minWidth: 240, maxWidth: "min(360px, calc(100vw - 24px))", background: "var(--color-bg-card)", border: "0.5px solid var(--color-border)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 6px 24px rgba(0,0,0,0.08)", zIndex: 50 };
     const popoverLabelS = { fontSize: 10, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.6px", margin: "2px 0 6px" };
     const popoverDividerS = { height: "0.5px", background: "var(--color-border)", margin: "10px -12px" };
     const filterPillsS = { display: "flex", gap: 6, flexWrap: "wrap" };

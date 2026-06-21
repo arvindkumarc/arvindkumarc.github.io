@@ -18,7 +18,7 @@ Done — see `_layouts/news.html`:
 - [x] **Hide-pinned / Hide-read on the GitHub rail** — `FeedColumn` now honors both toggles via props from `Section`.
 - [ ] **HN discussion link beyond Tech.** `hnId` only appears on items fetched via the worker's aggregated endpoint (Hacker News items in the Tech feed). It does not show on cross-posted HN stories surfaced through other sources. Fine for v1.
 - [x] **Icon rendering bug in GitHub columns** — feed icons now carry the full FA prefix (e.g. `"fas fa-brain"`, `"fab fa-python"`). `FeedColumn` renders `feed.icon` directly. Custom langs default to `"fas fa-code"`.
-- [ ] **Mobile pass (remaining).** Stacking order is fixed (news first, rail below). Still untested on a real phone: masthead wrap behavior with the volume counter, kebab popover position when opened near the right edge, histogram bar tappability at narrow widths.
+- [x] **Mobile pass.** News-first stacking. Masthead right-side wraps via `flex-wrap` so the volume counter drops below the date cleanly. Kebab popover capped at `min(360px, calc(100vw - 24px))` so it never overflows the viewport. Histogram bars get an 8px min-width + invisible vertical padding hit zone under 640px (or any touch-only device). Still worth a phone eyeball to confirm.
 
 ## Notes for the worker
 
