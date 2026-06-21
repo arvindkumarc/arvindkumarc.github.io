@@ -13,7 +13,7 @@ Done — see `_layouts/news.html`:
 
 ## Other open items
 
-- [ ] **#13 — More tech sources.** Add to the unified Tech feed. Candidates to evaluate: Cloudflare Blog, Stripe Engineering, GitHub Blog, Vercel, LWN.net, The Pragmatic Engineer, Pinterest Eng, LinkedIn Eng, Uber Eng, Airbnb Tech, Spotify Eng, Discord Eng, ArXiv cs.LG / cs.CL / cs.DC, Simon Willison's blog, Hillel Wayne, Julia Evans. **Two places to edit in sync:** `cloudflare/rss-proxy/src/index.js` (worker that builds the aggregated KV blob) and `_layouts/news.html` `SECTIONS.tech.feeds` (the source-filter list that the kebab menu pulls from).
+- [x] **#13 — More tech sources.** Tier 1 added: Cloudflare, Stripe, Simon Willison, Julia Evans, Dan Luu, Fly.io, Anthropic, Hugging Face. HN cap dropped 30→25 to stay under the free-tier 50-subrequest ceiling. Tier 2 candidates parked for later: GitHub Blog, Shopify Eng, Mozilla Hacks, DoorDash Eng, OpenAI Blog. Skipped: ArXiv cs.LG/CL (volume), Pragmatic Engineer (paywall), Slack/Dropbox (dormant).
 - [ ] **Cross-section search.** The search input only filters the Tech (unified) column. GitHub `FeedColumn` instances ignore `searchQuery`. Either wire it through to FeedColumn or update the placeholder to be honest.
 - [ ] **Hide-pinned / Hide-read on the GitHub rail.** Currently those view toggles only affect the unified feed.
 - [ ] **HN discussion link beyond Tech.** `hnId` only appears on items fetched via the worker's aggregated endpoint (Hacker News items in the Tech feed). It does not show on cross-posted HN stories surfaced through other sources. Fine for v1.
