@@ -2,17 +2,14 @@
 
 Pending items for `/news` (Doomscroll). Completed items live in git history; this file tracks what's still on deck.
 
-## Newspaper bet (in progress)
+## Newspaper bet
 
-Goal: render the page as a designed object, not an RSS reader. Existing pieces (italic-serif masthead, uppercase mono date strip, ranked Top-Today card) get pushed further:
-
-- [ ] **One hero story, not three.** Replace the current 3-up Top Today card with a single dominant headline (~32–40px italic serif) above the feed. Source: highest-scored item from `pickHeroes` (use `n=1`).
-- [ ] **Optional dek / standfirst.** One-line summary under the hero headline. We only have titles — either omit or generate via a one-shot LLM call (cheap but lossy). Recommend: omit for v1.
-- [ ] **Above-the-fold row.** 3 secondary stories under the hero in a 3-column grid (ranks 2–4). Smaller headlines, same meta strip.
-- [ ] **"THE WIRE" divider.** Small-caps label + thin horizontal rule separating the curated top from the chronological firehose below.
-- [ ] **Column rules / newspaper columns in the firehose.** CSS `column-count: 2` with `column-rule` on the unpinned feed — gives newsroom density. Watch for ArticleCard breaking across columns (`break-inside: avoid`).
-- [ ] **Drop cap on hero.** Big initial letter on the hero title for masthead energy.
-- [ ] **Volume counter.** Tongue-in-cheek `Vol. III · No. 142` ticker that increments daily. Compute from days-since-epoch.
+Done — see `_layouts/news.html`:
+- Single dominant hero (36px italic serif, drop cap in accent color) replaces the 3-up Top Today card. Dek omitted per v1 recommendation.
+- 3-up secondary row (ranks 2–4) under the hero in a grid, stacks to 1 col under 768px.
+- "THE WIRE" divider (mono small-caps, thin rules) separates the curated top from the firehose.
+- Firehose flows in 2 newspaper columns with a column rule; `break-inside: avoid` on each card. Collapses to 1 col under 980px.
+- Volume counter in the masthead — epoch 2025-11-01, displays as `Vol. I · No. N`.
 
 ## Other open items
 

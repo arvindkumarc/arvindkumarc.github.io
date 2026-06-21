@@ -205,6 +205,178 @@
       }
     }
 
+    /* --- Newspaper: hero, secondary row, wire divider, firehose columns --- */
+    .news-hero {
+      background: var(--color-bg-card);
+      border: 0.5px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 18px 22px 14px;
+      margin-bottom: 14px;
+    }
+    .news-hero-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1.3px;
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+    .news-hero-label::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #FF6B35;
+      flex-shrink: 0;
+    }
+    .news-hero-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+    .news-hero-link:hover .news-hero-title { color: var(--color-accent); }
+    .news-hero-title {
+      display: block;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 34px;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+      text-transform: none;
+      margin: 0 0 10px;
+      padding: 0;
+      color: var(--color-text-primary);
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      transition: color 0.15s ease;
+    }
+    .news-hero-title::first-letter {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: 700;
+      font-style: normal;
+      font-size: 3.4em;
+      float: left;
+      line-height: 0.88;
+      margin: 6px 8px 0 0;
+      color: var(--color-text-primary);
+    }
+    .news-hero-link.is-read .news-hero-title { opacity: 0.55; }
+    .news-hero-secondary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      padding-top: 14px;
+      margin-top: 14px;
+      border-top: 0.5px solid var(--color-border-tertiary);
+    }
+    .news-hero-secondary > a {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      min-width: 0;
+    }
+    .news-hero-sec-title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 15px;
+      line-height: 1.3;
+      margin: 0 0 6px;
+      color: var(--color-text-primary);
+      transition: color 0.15s ease;
+    }
+    .news-hero-secondary > a:hover .news-hero-sec-title { color: var(--color-accent); }
+    .news-hero-secondary > a.is-read .news-hero-sec-title { opacity: 0.55; }
+    .news-hero-sec-rank {
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-text-tertiary);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      opacity: 0.7;
+    }
+    @media (max-width: 768px) {
+      .news-hero-title { font-size: 26px; }
+      .news-hero-title::first-letter { font-size: 3.4em; }
+      .news-hero-secondary { grid-template-columns: 1fr; gap: 14px; }
+    }
+
+    .news-wire-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 22px 0 14px;
+    }
+    .news-wire-divider::before, .news-wire-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--color-border);
+    }
+    .news-wire-label {
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2.6px;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .news-wire-label::before, .news-wire-label::after {
+      content: "▒";
+      font-size: 8px;
+      opacity: 0.4;
+      letter-spacing: 0;
+    }
+
+    .news-firehose-columns {
+      column-count: 2;
+      column-gap: 28px;
+      column-rule: 0.5px solid var(--color-border-tertiary);
+    }
+    .news-firehose-columns > a {
+      break-inside: avoid;
+      -webkit-column-break-inside: avoid;
+      page-break-inside: avoid;
+      display: block;
+      padding-top: 12px !important;
+      padding-bottom: 12px !important;
+    }
+    @media (max-width: 980px) {
+      .news-firehose-columns { column-count: 1; column-rule: none; }
+    }
+
+    /* Broadsheet headlines in the main column (skips GitHub rail) */
+    .news-main .article-title {
+      font-family: Georgia, 'Times New Roman', serif !important;
+      font-style: normal !important;
+      font-weight: 600 !important;
+      font-size: 15px !important;
+      line-height: 1.32 !important;
+      letter-spacing: -0.1px !important;
+      color: var(--color-text-primary) !important;
+    }
+    .news-main a:hover .article-title { color: var(--color-accent) !important; }
+
+    .news-volume {
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+
     /* Two-column page layout: feed left, GitHub rail right.
        Mobile (< 980px): GitHub stacks ABOVE the firehose (finite, scannable). */
     .news-layout {
@@ -671,7 +843,7 @@
             <button onClick={handlePin} style={pinBtnS} title={isPinned ? "Unpin" : "Pin"}>
               <i className={pinIconClass} style={pinIconStyle} />
             </button>
-            <p style={articleTitleS}>
+            <p className="article-title" style={articleTitleS}>
               {isRead ? "\u2713 " : ""}
               {isNew && !isRead && <span style={Object.assign({}, newBadgeS, { marginRight: 6 })}>New</span>}
               {item.title}
@@ -908,45 +1080,84 @@
       );
     }
 
-    function TodayCard({ items, readUrls, markRead, pinnedUrls, togglePin, sectionColor, prevVisit }) {
-      if (!items || items.length === 0) return null;
-      return React.createElement("div", { style: heroWrapS },
-        React.createElement("p", { style: heroLabelS },
-          React.createElement("span", { style: heroLabelDotS }),
-          "Top today"
+    function metaStrip(item, sectionColor) {
+      return React.createElement("div", { style: articleMetaS },
+        faviconUrl(item.url) && React.createElement("img", { src: faviconUrl(item.url), alt: "", style: faviconS, loading: "lazy", referrerPolicy: "no-referrer", onError: function(e) { e.target.style.display = "none"; } }),
+        React.createElement("span", { style: metaBrandS(sectionColor) }, item.source),
+        domainOf(item.url) && React.createElement("span", { style: domainS }, "· " + domainOf(item.url)),
+        item.points > 0 && React.createElement("span", { style: statS, title: item.points + " points" },
+          React.createElement("i", { className: "fas fa-arrow-up", style: statIconS, "aria-hidden": true }),
+          formatCount(item.points)
         ),
-        items.map(function(item, idx) {
-          return React.createElement("a", {
-            key: item.url,
-            href: item.url,
-            target: "_blank",
-            rel: "noopener noreferrer",
-            style: Object.assign({}, heroItemLinkS, idx === items.length - 1 ? { borderBottom: "none" } : {}, readUrls && readUrls.has(item.url) ? { opacity: 0.55 } : {}),
-            onClick: function() { if (markRead) markRead(item.url); },
-          },
-            React.createElement("div", { style: heroRowS },
-              React.createElement("span", { style: heroRankS }, String(idx + 1).padStart(2, "0")),
-              React.createElement("div", { style: { flex: 1, minWidth: 0 } },
-                React.createElement("p", { style: heroItemTitleS }, item.title),
-                React.createElement("div", { style: articleMetaS },
-                  faviconUrl(item.url) && React.createElement("img", { src: faviconUrl(item.url), alt: "", style: faviconS, loading: "lazy", referrerPolicy: "no-referrer", onError: function(e) { e.target.style.display = "none"; } }),
-                  React.createElement("span", { style: metaBrandS(sectionColor) }, item.source),
-                  domainOf(item.url) && React.createElement("span", { style: domainS }, "· " + domainOf(item.url)),
-                  item.points > 0 && React.createElement("span", { style: statS, title: item.points + " points" },
-                    React.createElement("i", { className: "fas fa-arrow-up", style: statIconS, "aria-hidden": true }),
-                    formatCount(item.points)
-                  ),
-                  item.comments > 0 && React.createElement("span", { style: statS, title: item.comments + " comments" },
-                    React.createElement("i", { className: "far fa-comment", style: statIconS, "aria-hidden": true }),
-                    formatCount(item.comments)
-                  ),
-                  item.date && React.createElement("span", { style: metaTextS }, timeAgo(item.date))
-                )
-              )
-            )
-          );
-        })
+        item.comments > 0 && React.createElement("span", { style: statS, title: item.comments + " comments" },
+          React.createElement("i", { className: "far fa-comment", style: statIconS, "aria-hidden": true }),
+          formatCount(item.comments)
+        ),
+        item.date && React.createElement("span", { style: metaTextS }, timeAgo(item.date))
       );
+    }
+
+    function TodayCard({ items, readUrls, markRead, sectionColor }) {
+      if (!items || items.length === 0) return null;
+      var hero = items[0];
+      var secondaries = items.slice(1, 4);
+      var heroRead = readUrls && readUrls.has(hero.url);
+      return React.createElement("div", { className: "news-hero" },
+        React.createElement("p", { className: "news-hero-label" }, "Top today"),
+        React.createElement("a", {
+          key: hero.url,
+          className: "news-hero-link" + (heroRead ? " is-read" : ""),
+          href: hero.url,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          onClick: function() { if (markRead) markRead(hero.url); },
+        },
+          React.createElement("h2", { className: "news-hero-title" }, hero.title),
+          metaStrip(hero, sectionColor)
+        ),
+        secondaries.length > 0 && React.createElement("div", { className: "news-hero-secondary" },
+          secondaries.map(function(item, idx) {
+            var isRead = readUrls && readUrls.has(item.url);
+            return React.createElement("a", {
+              key: item.url,
+              className: isRead ? "is-read" : "",
+              href: item.url,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              onClick: function() { if (markRead) markRead(item.url); },
+            },
+              React.createElement("p", { className: "news-hero-sec-rank" }, "№ " + String(idx + 2).padStart(2, "0")),
+              React.createElement("p", { className: "news-hero-sec-title" }, item.title),
+              metaStrip(item, sectionColor)
+            );
+          })
+        )
+      );
+    }
+
+    function WireDivider() {
+      return React.createElement("div", { className: "news-wire-divider" },
+        React.createElement("span", { className: "news-wire-label" }, "The Wire")
+      );
+    }
+
+    function toRoman(n) {
+      var nums = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+      var syms = ["M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"];
+      var r = "";
+      for (var i = 0; i < nums.length; i++) {
+        while (n >= nums[i]) { r += syms[i]; n -= nums[i]; }
+      }
+      return r || "I";
+    }
+    function computeVolume() {
+      // Epoch: 2025-11-01 — when Doomscroll launched.
+      var epoch = new Date(2025, 10, 1).getTime();
+      var days = Math.floor((Date.now() - epoch) / 86400000) + 1;
+      if (days < 1) days = 1;
+      var vol = Math.floor((days - 1) / 365) + 1;
+      var no = ((days - 1) % 365) + 1;
+      return { vol: toRoman(vol), no: no };
     }
 
     function UnifiedFeed({ feeds, sectionColor, readUrls, markRead, pinnedUrls, togglePin, searchQuery, sourceFilter, hideRead, hidePinned, prevVisit }) {
@@ -1016,7 +1227,8 @@
       // Slice to display count
       // Pick hero items from the full (unfiltered) pool so search/filters don't suppress the "Top today" picks.
       // Skip heroes when any filter or search is active — hero feature is a clean-feed concept.
-      var heroes = (q || s || selectedDay || hideRead || hidePinned) ? [] : pickHeroes(allItems, readUrls, 3);
+      // Pick heroes from the full pool — read state should dim the hero, not bump it off the page.
+      var heroes = (q || s || selectedDay || hideRead || hidePinned) ? [] : pickHeroes(allItems, null, 4);
       var heroUrls = new Set(heroes.map(function(h) { return h.url; }));
 
       var shownItems = filtered.slice(0, displayCount);
@@ -1140,11 +1352,9 @@
           items: heroes,
           readUrls: readUrls,
           markRead: markRead,
-          pinnedUrls: pinnedUrls,
-          togglePin: togglePin,
           sectionColor: sectionColor,
-          prevVisit: prevVisit,
         }),
+        !loading && heroes.length > 0 && React.createElement(WireDivider),
         React.createElement("div", { style: feedListS },
         loading && React.createElement("div", { style: skelRowS },
           [1, 2, 3, 4, 5, 6].map(function(n) {
@@ -1157,7 +1367,7 @@
         error && React.createElement("p", { style: errS }, "Couldn\u2019t load \u2014 try refreshing"),
         !loading && !error && allVisible.length === 0 && React.createElement("p", { style: emptyS }, "No items found"),
         !loading && pinnedEls,
-        !loading && unpinnedEls,
+        !loading && unpinnedEls.length > 0 && React.createElement("div", { className: "news-firehose-columns", key: "firehose" }, unpinnedEls),
         !loading && allVisible.length > 0 && React.createElement("p", { style: countS }, allVisible.length + " items" + (q ? " matching \u201C" + searchQuery + "\u201D" : "")),
         loadMoreBtn,
         !loading && React.createElement("p", { style: shortcutsS }, "j/k: navigate \u00B7 o/Enter: open")
@@ -1310,6 +1520,7 @@
     function App() {
       const [lastRefresh, setLastRefresh] = useState(new Date());
       const [globalKey, setGlobalKey] = useState(0);
+      const volume = computeVolume();
       const [searchQuery, setSearchQuery] = useState('');
       const [sourceFilter, setSourceFilter] = useState('');
       const [hideRead, setHideRead] = useState(false);
@@ -1350,6 +1561,8 @@
               <p style={headerTag}>the algorithm-free firehose</p>
             </div>
             <div style={headerRightS}>
+              <span className="news-volume" title="Days since Doomscroll launched">Vol. {volume.vol} · No. {volume.no}</span>
+              <span style={headerDividerS}>·</span>
               <p style={headerSub}>
                 {lastRefresh.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })} · {lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </p>
