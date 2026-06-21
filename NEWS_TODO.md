@@ -14,10 +14,10 @@ Done — see `_layouts/news.html`:
 ## Other open items
 
 - [x] **#13 — More tech sources.** Tier 1 added: Cloudflare, Stripe, Simon Willison, Julia Evans, Dan Luu, Fly.io, Anthropic, Hugging Face. HN cap dropped 30→25 to stay under the free-tier 50-subrequest ceiling. Tier 2 candidates parked for later: GitHub Blog, Shopify Eng, Mozilla Hacks, DoorDash Eng, OpenAI Blog. Skipped: ArXiv cs.LG/CL (volume), Pragmatic Engineer (paywall), Slack/Dropbox (dormant).
-- [ ] **Cross-section search.** The search input only filters the Tech (unified) column. GitHub `FeedColumn` instances ignore `searchQuery`. Either wire it through to FeedColumn or update the placeholder to be honest.
-- [ ] **Hide-pinned / Hide-read on the GitHub rail.** Currently those view toggles only affect the unified feed.
+- [x] **Cross-section search** — `FeedColumn` now honors `searchQuery` (matches title + source). Placeholder updated.
+- [x] **Hide-pinned / Hide-read on the GitHub rail** — `FeedColumn` now honors both toggles via props from `Section`.
 - [ ] **HN discussion link beyond Tech.** `hnId` only appears on items fetched via the worker's aggregated endpoint (Hacker News items in the Tech feed). It does not show on cross-posted HN stories surfaced through other sources. Fine for v1.
-- [ ] **Icon rendering bug in GitHub columns.** `FeedColumn` renders `"fab " + feed.icon`, but `fa-brain` / `fa-star` / `fa-code` are Solid (`fas`), not Brand (`fab`). AI/ML, All Languages, and user-added custom languages probably render as empty squares. Allow a per-feed icon prefix or switch to `fas` with a fallback.
+- [x] **Icon rendering bug in GitHub columns** — feed icons now carry the full FA prefix (e.g. `"fas fa-brain"`, `"fab fa-python"`). `FeedColumn` renders `feed.icon` directly. Custom langs default to `"fas fa-code"`.
 - [ ] **Mobile pass.** The locked-viewport / column-scroll layout disables itself under 980px and falls back to natural page scroll, but nothing has been deliberately tuned for phones. Check the masthead wrap, the kebab popover position, the histogram bar tappability, and the rail-above-firehose stacking order.
 
 ## Notes for the worker
