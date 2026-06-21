@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page.title | default: "News Dashboard" }}</title>
-  <meta name="description" content="Engineer news dashboard — live feeds from HN, Dev.to, GitHub, YouTube, and Google News">
+  <title>Doomscroll</title>
+  <meta name="description" content="Doomscroll — the algorithm-free firehose. Live feeds from Hacker News, Dev.to, Lobsters, ArXiv, GitHub Trending, and major engineering blogs.">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -49,13 +49,106 @@
     .news-container {
       opacity: 1 !important;
       transform: none !important;
-      padding: 1.25rem 0 3rem;
-      max-width: 1100px;
+      padding: 0.75rem 0 0;
+      max-width: 1500px;
       margin: 0 auto;
+    }
+    /* Break out of the parent .container's 800px cap, and kill main's heavy top padding on the news page only */
+    .main .container:has(> .news-container) {
+      max-width: none;
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+    .main:has(.news-container) {
+      padding: 0;
+      min-height: 0;
+    }
+    @media (max-width: 640px) {
+      .main .container:has(> .news-container) {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+
+    /* --- Full-height layout: page itself doesn't scroll; columns scroll independently (desktop only) --- */
+    @media (min-width: 980px) {
+      html:has(.news-container), body:has(.news-container) {
+        height: 100%;
+        overflow: hidden;
+      }
+      .main:has(.news-container) {
+        /* Nav removed on this page — fill the entire viewport */
+        height: 100vh;
+        overflow: hidden;
+      }
+      .main:has(.news-container) > .container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .news-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 0;
+      }
+      .news-app-root {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+      }
+      .news-layout-fill {
+        flex: 1;
+        min-height: 0;
+      }
+      .news-main, .news-rail {
+        height: 100%;
+        overflow-y: auto;
+        padding-right: 6px;
+      }
+      /* Distinct scrollbars per column */
+      .news-main {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-accent) transparent;
+      }
+      .news-main::-webkit-scrollbar { width: 8px; }
+      .news-main::-webkit-scrollbar-thumb {
+        background: var(--color-accent);
+        border-radius: 4px;
+      }
+      .news-main::-webkit-scrollbar-track { background: transparent; }
+
+      .news-rail {
+        scrollbar-width: thin;
+        scrollbar-color: #1D9E75 transparent;
+      }
+      .news-rail::-webkit-scrollbar { width: 6px; }
+      .news-rail::-webkit-scrollbar-thumb {
+        background: #1D9E75;
+        border-radius: 3px;
+        opacity: 0.6;
+      }
+      .news-rail::-webkit-scrollbar-track { background: transparent; }
     }
 
     .news-container h1, .news-container h2, .news-container h3 {
       border-bottom: none !important;
+    }
+
+    /* Wordmark for The Wire on the news page */
+    .news-wordmark {
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      font-size: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .news-wordmark i {
+      font-size: 14px;
+      color: var(--color-accent);
     }
 
     /* Button base style for dashboard */
@@ -111,73 +204,51 @@
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
+    /* Two-column page layout: feed left, GitHub rail right.
+       Mobile (< 980px): GitHub stacks ABOVE the firehose (finite, scannable). */
+    .news-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    .news-main { order: 2; min-width: 0; }
+    .news-rail { order: 1; min-width: 0; }
+    @media (min-width: 980px) {
+      .news-layout {
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 2rem;
+      }
+      .news-main { order: 1; }
+      .news-rail { order: 2; }
+      /* Inside the narrow rail, collapse the 2-col GitHub grid to 1 col */
+      .news-rail .news-section-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <nav class="nav">
-    <div class="nav-container">
-      <a href="{{ '/' | relative_url }}" class="nav-logo">
-        <img src="{{ '/images/195248.jpeg' | relative_url }}" alt="" class="nav-avatar">
-        {{ site.title }}
-      </a>
-      <div class="nav-links">
-        <a href="{{ '/' | relative_url }}" class="nav-link">Home</a>
-        <a href="https://blog.arvindc.in" target="_blank" class="nav-link">Blog <i class="fas fa-external-link-alt fa-xs"></i></a>
-        <a href="{{ '/arvindkumarc_profile.pdf' | relative_url }}" target="_blank" class="nav-link">Resume <i class="fas fa-external-link-alt fa-xs"></i></a>
-        <a href="{{ '/news' | relative_url }}" class="nav-link active">News <i class="fas fa-rss fa-xs"></i></a>
-      </div>
-      <button class="theme-toggle" aria-label="Toggle dark mode">
-        <i class="fas fa-moon"></i>
-        <i class="fas fa-sun"></i>
-      </button>
-      <button class="nav-toggle" aria-label="Toggle menu">
-        <i class="fas fa-bars"></i>
-      </button>
-    </div>
-  </nav>
-
   <main class="main">
     <div class="container">
       <div id="news-dashboard" class="news-container"></div>
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="social-links">
-        <a href="https://github.com/arvindkumarc" target="_blank" aria-label="GitHub">
-          <i class="fab fa-github"></i>
-        </a>
-        <a href="https://twitter.com/arvindkumarc" target="_blank" aria-label="Twitter">
-          <i class="fab fa-twitter"></i>
-        </a>
-        <a href="https://www.linkedin.com/in/arvindkumarchinniah/" target="_blank" aria-label="LinkedIn">
-          <i class="fab fa-linkedin-in"></i>
-        </a>
-        <a href="https://medium.com/@arvindkumarc" target="_blank" aria-label="Medium">
-          <i class="fab fa-medium"></i>
-        </a>
-      </div>
-      <p class="footer-text">&copy; {{ 'now' | date: '%Y' }} {{ site.title }}</p>
-    </div>
-  </footer>
 
-  <!-- Theme toggle -->
+  <!-- Theme helpers (used by React masthead toggle) -->
   <script>
-    function setTheme(theme) {
+    window.setNewsTheme = function(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
-    }
-    document.querySelector('.theme-toggle').addEventListener('click', () => {
+    };
+    window.toggleNewsTheme = function() {
       var newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      setTheme(newTheme);
+      window.setNewsTheme(newTheme);
       localStorage.setItem('theme', newTheme);
-    });
+    };
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-      if (!localStorage.getItem('theme')) setTheme(e.matches ? 'dark' : 'light');
-    });
-    document.querySelector('.nav-toggle').addEventListener('click', function() {
-      document.querySelector('.nav-links').classList.toggle('active');
+      if (!localStorage.getItem('theme')) window.setNewsTheme(e.matches ? 'dark' : 'light');
     });
   </script>
 
@@ -307,7 +378,10 @@
           title: i.title,
           url: i.url || "https://news.ycombinator.com/item?id=" + i.id,
           source: "Hacker News",
-          meta: (i.score || 0) + " pts · " + (i.descendants || 0) + " comments",
+          points: i.score || 0,
+          comments: i.descendants || 0,
+          author: i.by || "",
+          hnId: i.id,
           date: i.time ? new Date(i.time * 1000).toISOString() : null,
         };
       });
@@ -321,7 +395,9 @@
         title: a.title,
         url: a.url,
         source: "Dev.to · #" + (a.tag_list?.[0] || tag),
-        meta: "❤ " + a.positive_reactions_count + " · " + a.comments_count + " comments",
+        points: a.positive_reactions_count || 0,
+        comments: a.comments_count || 0,
+        author: (a.user && a.user.name) || "",
         date: a.published_at,
       }));
     }
@@ -378,7 +454,7 @@
           if (nameEls && nameEls.length) author = nameEls[0].textContent || "";
         }
 
-        items.push({ title: title, url: link, source: sourceName, meta: author, date: date || null });
+        items.push({ title: title, url: link, source: sourceName, author: author || "", date: date || null });
       }
       return items;
     }
@@ -408,7 +484,8 @@
         var items = parseRSSXML(xml, "GitHub · " + (lang || "All"), { limit: limit });
         if (items.length > 0) {
           items.forEach(function(item) {
-            if (item.meta) item.meta = item.meta.replace(/<[^>]+>/g, "").slice(0, 80);
+            // GitHub trending RSS puts repo description in author field (via dc:creator) — clear it
+            item.author = "";
           });
           return items;
         }
@@ -433,7 +510,7 @@
             })
             .slice(0, limit)
             .map(function(m) {
-              return { title: m[1], url: "https://github.com/" + m[1], source: "GitHub · " + (lang || "All"), meta: "trending today", date: null };
+              return { title: m[1], url: "https://github.com/" + m[1], source: "GitHub · " + (lang || "All"), date: null };
             });
         } catch (e2) { return []; }
       }
@@ -474,7 +551,6 @@
     }
 
     const articleLinkS = { display: "block", padding: "10px 0", borderBottom: "0.5px solid var(--color-border-tertiary)", textDecoration: "none", color: "inherit" };
-    const articleThumbS = { width: "100%", height: 110, objectFit: "cover", borderRadius: 6, marginBottom: 6, display: "block" };
     const articleTitleS = { margin: "0 0 4px", fontSize: 13.5, fontWeight: 500, lineHeight: 1.4, color: "var(--color-text-primary)" };
     const articleMetaS = { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" };
     const metaBrandS = (accent) => ({ fontSize: 11, color: accent, fontWeight: 500 });
@@ -485,8 +561,94 @@
     const pinIconInactiveS = { fontSize: 13 };
     const cardRowS = { display: "flex", gap: 6, alignItems: "flex-start" };
 
-    function ArticleCard({ item, accent, isRead, onMarkRead, isPinned, onTogglePin, isFocused, isDimmed, ...rest }) {
+    const faviconS = { width: 14, height: 14, borderRadius: 3, verticalAlign: "-2px", flexShrink: 0 };
+    const domainS = { fontSize: 11, color: "var(--color-text-tertiary)", fontWeight: 400 };
+    const statS = { fontSize: 11, color: "var(--color-text-tertiary)", display: "inline-flex", alignItems: "center", gap: 3 };
+    const statIconS = { fontSize: 10, opacity: 0.7 };
+
+    function formatCount(n) {
+      if (n == null) return "";
+      if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "k";
+      return String(n);
+    }
+
+    // --- Track "last visit" — captured once per page load, used to mark new items ---
+    function useLastVisit() {
+      const [prev] = useState(function() {
+        var raw = localStorage.getItem("news_last_visit");
+        var now = Date.now();
+        localStorage.setItem("news_last_visit", String(now));
+        return raw ? Number(raw) : null;
+      });
+      return prev;
+    }
+    function isNewItem(item, prevVisit) {
+      if (!prevVisit || !item.date) return false;
+      var t = new Date(item.date).getTime();
+      return !isNaN(t) && t > prevVisit;
+    }
+
+    // --- Hero scoring: pick the day's standouts ---
+    function sourceWeight(src) {
+      if (!src) return 0.6;
+      if (src.indexOf("Hacker News") === 0) return 1.0;
+      if (src.indexOf("Lobsters") === 0) return 0.95;
+      if (src.indexOf("ArXiv") === 0) return 0.8;
+      if (src.indexOf("Google AI") === 0) return 0.85;
+      if (src.indexOf("Meta") === 0 || src.indexOf("Netflix") === 0 || src.indexOf("AWS") === 0) return 0.85;
+      if (src.indexOf("Dev.to") === 0) return 0.5;
+      return 0.7;
+    }
+    function heatScore(item, now) {
+      if (!item.date) return 0;
+      var ageMs = now - new Date(item.date).getTime();
+      var ageHours = ageMs / 3600000;
+      if (isNaN(ageHours) || ageHours < 0 || ageHours > 36) return 0;
+      var clampedHours = Math.max(1, ageHours);
+      var recency = 1 / Math.pow(clampedHours, 0.55);
+      var pts = Math.max(item.points || 0, 20); // floor so RSS-only items can compete
+      return pts * recency * sourceWeight(item.source);
+    }
+    function pickHeroes(items, readUrls, n) {
+      var now = Date.now();
+      var scored = items.map(function(it) { return { item: it, score: heatScore(it, now) }; })
+        .filter(function(x) { return x.score > 0; })
+        .filter(function(x) { return !readUrls || !readUrls.has(x.item.url); });
+      scored.sort(function(a, b) { return b.score - a.score; });
+      return scored.slice(0, n || 3).map(function(x) { return x.item; });
+    }
+
+    const heroWrapS = { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "10px 14px 4px", marginBottom: 10 };
+    const heroLabelS = { margin: "0 0 8px", fontSize: 10, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "1.3px", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", display: "flex", alignItems: "center", gap: 6 };
+    const heroLabelDotS = { width: 6, height: 6, borderRadius: "50%", background: "#FF6B35", flexShrink: 0 };
+    const heroItemTitleS = { margin: "0 0 4px", fontSize: 14, fontWeight: 600, lineHeight: 1.35, color: "var(--color-text-primary)" };
+    const heroItemLinkS = { display: "block", padding: "10px 0", borderBottom: "0.5px solid var(--color-border-tertiary)", textDecoration: "none", color: "inherit" };
+    const heroRankS = { fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontVariantNumeric: "tabular-nums", marginRight: 8, opacity: 0.6 };
+    const heroRowS = { display: "flex", alignItems: "flex-start", gap: 6 };
+
+    const newBadgeS = { fontSize: 9, fontWeight: 600, color: "#1D9E75", background: "#E1F5EE", padding: "1px 6px", borderRadius: 8, letterSpacing: "0.4px", textTransform: "uppercase" };
+    const newCardEdgeS = { boxShadow: "inset 3px 0 0 #1D9E75" };
+
+    const discussChipS = { fontSize: 11, color: "#FF6600", background: "rgba(255,102,0,0.08)", padding: "1px 6px", borderRadius: 4, display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer", textDecoration: "none" };
+    function openHNDiscussion(e, hnId) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.open("https://news.ycombinator.com/item?id=" + hnId, "_blank", "noopener");
+    }
+
+    function domainOf(url) {
+      try { return new URL(url).hostname.replace(/^www\./, ""); }
+      catch (e) { return ""; }
+    }
+    function faviconUrl(url) {
+      var host = domainOf(url);
+      if (!host) return "";
+      return "https://www.google.com/s2/favicons?domain=" + host + "&sz=32";
+    }
+
+    function ArticleCard({ item, accent, isRead, onMarkRead, isPinned, onTogglePin, isFocused, isDimmed, isNew, ...rest }) {
       var cardStyle = Object.assign({}, articleLinkS);
+      if (isNew && !isRead) { Object.assign(cardStyle, newCardEdgeS); cardStyle.paddingLeft = 10; }
       if (isRead) { cardStyle.opacity = 0.5; }
       if (isDimmed) { cardStyle.opacity = 0.25; }
       if (isFocused) { cardStyle.background = "var(--color-accent-light)"; cardStyle.borderRadius = 4; cardStyle.margin = "0 -4px"; cardStyle.padding = "0 4px"; }
@@ -504,16 +666,50 @@
       }
 
       return (
-        <a href={item.url} target="_blank" rel="noopener noreferrer" style={cardStyle} onClick={handleClick} {...rest}>
+        <a href={item.url} target="_blank" rel="noopener noreferrer" style={cardStyle} onClick={handleClick} data-new={isNew && !isRead ? "true" : undefined} {...rest}>
           <div style={cardRowS}>
             <button onClick={handlePin} style={pinBtnS} title={isPinned ? "Unpin" : "Pin"}>
               <i className={pinIconClass} style={pinIconStyle} />
             </button>
-            <p style={articleTitleS}>{isRead ? "\u2713 " : ""}{item.title}</p>
+            <p style={articleTitleS}>
+              {isRead ? "\u2713 " : ""}
+              {isNew && !isRead && <span style={Object.assign({}, newBadgeS, { marginRight: 6 })}>New</span>}
+              {item.title}
+            </p>
           </div>
           <div style={articleMetaS}>
+            {faviconUrl(item.url) && <img src={faviconUrl(item.url)} alt="" style={faviconS} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.target.style.display = "none"; }} />}
             <span style={metaBrandS(accent)}>{item.source}</span>
-            {item.meta && <span style={metaTextS}>{item.meta}</span>}
+            {domainOf(item.url) && <span style={domainS}>· {domainOf(item.url)}</span>}
+            {item.points > 0 && (
+              <span style={statS} title={item.points + " points / likes"}>
+                <i className="fas fa-arrow-up" style={statIconS} aria-hidden="true" />
+                {formatCount(item.points)}
+              </span>
+            )}
+            {item.comments > 0 && (
+              <span style={statS} title={item.comments + " comments"}>
+                <i className="far fa-comment" style={statIconS} aria-hidden="true" />
+                {formatCount(item.comments)}
+              </span>
+            )}
+            {item.author && (
+              <span style={statS} title={"by " + item.author}>
+                <i className="far fa-user" style={statIconS} aria-hidden="true" />
+                {item.author}
+              </span>
+            )}
+            {item.hnId && domainOf(item.url) !== "news.ycombinator.com" && (
+              <span
+                style={discussChipS}
+                onClick={(e) => openHNDiscussion(e, item.hnId)}
+                title="Open HN discussion"
+              >
+                <i className="fab fa-y-combinator" style={statIconS} aria-hidden="true" />
+                discuss
+              </span>
+            )}
+            {!item.points && !item.comments && !item.author && item.meta && <span style={metaTextS}>{item.meta}</span>}
             {item.date && <span style={metaTextS}>{timeAgo(item.date)}</span>}
           </div>
         </a>
@@ -530,10 +726,11 @@
     const errS = { fontSize: 12, color: "var(--color-text-tertiary)", margin: 0, padding: "8px 0" };
     const emptyS = { fontSize: 12, color: "var(--color-text-tertiary)", margin: 0 };
 
-    function FeedColumn({ feed, sectionColor, readUrls, markRead, pinnedUrls, togglePin }) {
+    function FeedColumn({ feed, sectionColor, readUrls, markRead, pinnedUrls, togglePin, prevVisit, onRemoveLang }) {
       const [items, setItems] = useState([]);
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(false);
+      const [open, setOpen] = useState(true);
 
       useEffect(() => {
         let cancelled = false;
@@ -549,14 +746,35 @@
         return () => { cancelled = true; };
       }, [feed.id]);
 
+      var headStyle = Object.assign({}, feedColHeadS, { cursor: "pointer", userSelect: "none", justifyContent: "space-between", marginBottom: open ? 10 : 0 });
+      var chevS = { fontSize: 11, color: "var(--color-text-tertiary)" };
+      var countBadgeS = { fontSize: 10, color: "var(--color-text-tertiary)", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontVariantNumeric: "tabular-nums" };
+      var headLeftS = { display: "inline-flex", alignItems: "center", gap: 6 };
+
       return (
         <div style={feedColS}>
-          <div style={feedColHeadS}>
-            <i className={"fab " + feed.icon} style={feedColIconS(sectionColor)} aria-hidden="true" />
-            <span style={feedColLabelS(sectionColor)}>{feed.name}</span>
+          <div style={headStyle} onClick={() => setOpen(function(v) { return !v; })}>
+            <span style={headLeftS}>
+              <i className={"fab " + feed.icon} style={feedColIconS(sectionColor)} aria-hidden="true" />
+              <span style={feedColLabelS(sectionColor)}>{feed.name}</span>
+              {!loading && !error && items.length > 0 && <span style={countBadgeS}>{items.length}</span>}
+            </span>
+            <span style={headLeftS}>
+              {feed.isCustom && onRemoveLang && (
+                <button
+                  style={removeLangBtnS}
+                  onClick={(e) => { e.stopPropagation(); onRemoveLang(feed.name); }}
+                  title={"Remove " + feed.name}
+                  aria-label={"Remove " + feed.name}
+                >
+                  <i className="fas fa-xmark" aria-hidden="true" />
+                </button>
+              )}
+              <i className={"fas " + (open ? "fa-chevron-up" : "fa-chevron-down")} style={chevS} aria-hidden="true" />
+            </span>
           </div>
 
-          {loading && (
+          {open && loading && (
             <div style={skelRowS}>
               {[1, 2, 3, 4].map((n) => (
                 <div key={n}>
@@ -567,12 +785,12 @@
             </div>
           )}
 
-          {error && <p style={errS}>Couldn&apos;t load — try refreshing</p>}
+          {open && error && <p style={errS}>Couldn&apos;t load — try refreshing</p>}
 
-          {!loading && !error && items.length === 0 && <p style={emptyS}>No items found</p>}
+          {open && !loading && !error && items.length === 0 && <p style={emptyS}>No items found</p>}
 
-          {!loading && items.map((item, i) => (
-            <ArticleCard key={i} item={item} accent={sectionColor} isRead={readUrls ? readUrls.has(item.url) : false} onMarkRead={markRead} isPinned={pinnedUrls ? pinnedUrls.has(item.url) : false} onTogglePin={togglePin} />
+          {open && !loading && items.map((item, i) => (
+            <ArticleCard key={i} item={item} accent={sectionColor} isRead={readUrls ? readUrls.has(item.url) : false} onMarkRead={markRead} isPinned={pinnedUrls ? pinnedUrls.has(item.url) : false} onTogglePin={togglePin} isNew={isNewItem(item, prevVisit)} />
           ))}
         </div>
       );
@@ -582,14 +800,16 @@
     const feedListS = { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "14px 16px" };
     const searchInputS = { width: "100%", padding: "8px 12px", fontSize: 13, border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text-primary)", marginBottom: 12, outline: "none" };
     const pinnedSectionS = { marginBottom: 14, paddingBottom: 10, borderBottom: "0.5px solid var(--color-border-tertiary)" };
-    const pinnedLabelS = { fontSize: 11, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 };
+    const pinnedLabelS = { fontSize: 11, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6, cursor: "pointer", userSelect: "none", display: "flex", alignItems: "center", gap: 6 };
+    const pinnedCountS = { fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontVariantNumeric: "tabular-nums", opacity: 0.7 };
+    const pinnedChevS = { marginLeft: "auto", fontSize: 10 };
     const countS = { fontSize: 11, color: "var(--color-text-tertiary)", marginTop: 8, textAlign: "center" };
     const shortcutsS = { fontSize: 10, color: "var(--color-text-tertiary)", textAlign: "center", marginTop: 4, opacity: 0.6 };
 
     // --- Histogram of items by day ---
-    const histoWrapS = { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "12px 16px", marginBottom: 12 };
-    const histoHeadS = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, fontSize: 11, color: "var(--color-text-tertiary)" };
-    const histoBarsS = { display: "flex", alignItems: "flex-end", gap: 2, height: 48 };
+    const histoWrapS = { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "8px 14px", marginBottom: 10, position: "sticky", top: 0, zIndex: 4 };
+    const histoHeadS = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5, fontSize: 11, color: "var(--color-text-tertiary)" };
+    const histoBarsS = { display: "flex", alignItems: "flex-end", gap: 2, height: 28 };
     const histoBarS = (h, color, active, dim) => ({
       width: "100%",
       height: Math.max(2, h) + "px",
@@ -621,7 +841,7 @@
       fontWeight: 500,
     };
 
-    function Histogram({ items, sectionColor, selectedDay, onSelectDay, days }) {
+    function Histogram({ items, sectionColor, selectedDay, onSelectDay, days, newCount, prevVisit, onJumpNew }) {
       const [hoverIdx, setHoverIdx] = useState(-1);
       days = days || 30;
       var buckets = {};
@@ -639,23 +859,32 @@
         if (k in buckets) buckets[k]++;
       });
       var max = Math.max(1, ...keys.map(function(k) { return buckets[k]; }));
+      var maxBarH = 24;
       var firstLabel = new Date(keys[0]).toLocaleDateString([], { month: "short", day: "numeric" });
       var lastLabel = new Date(keys[keys.length - 1]).toLocaleDateString([], { month: "short", day: "numeric" });
       var selectedLabel = selectedDay ? new Date(selectedDay).toLocaleDateString([], { month: "short", day: "numeric" }) : null;
       var clearLinkS = { cursor: "pointer", color: sectionColor };
       var handleClear = function() { onSelectDay(null); };
 
+      var newPillS = { cursor: "pointer", color: "#1D9E75", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 };
+      var newPillIconS = { fontSize: 9 };
+      var prevLabel = prevVisit ? timeAgo(new Date(prevVisit).toISOString()) : null;
       return (
         <div style={histoWrapS}>
           <div style={histoHeadS}>
             <span>Activity · last {days}d</span>
-            {selectedLabel
-              ? <span style={clearLinkS} onClick={handleClear}>Showing {selectedLabel} · clear ✕</span>
-              : <span>{firstLabel} → {lastLabel}</span>}
+            {newCount > 0 && prevLabel
+              ? <span style={newPillS} onClick={onJumpNew} title="Jump to first new item">
+                  {newCount} new since {prevLabel}
+                  <i className="fas fa-arrow-down" style={newPillIconS} aria-hidden="true" />
+                </span>
+              : (selectedLabel
+                ? <span style={clearLinkS} onClick={handleClear}>Showing {selectedLabel} · clear ✕</span>
+                : <span>{firstLabel} → {lastLabel}</span>)}
           </div>
           <div style={histoBarsS}>
             {keys.map(function(k, idx) {
-              var h = (buckets[k] / max) * 44;
+              var h = (buckets[k] / max) * maxBarH;
               var active = selectedDay === k;
               var dim = selectedDay && !active;
               var onBarClick = function() { onSelectDay(active ? null : k); };
@@ -679,13 +908,65 @@
       );
     }
 
-    function UnifiedFeed({ feeds, sectionColor, readUrls, markRead, pinnedUrls, togglePin, searchQuery, sourceFilter, hideRead, hidePinned }) {
+    function TodayCard({ items, readUrls, markRead, pinnedUrls, togglePin, sectionColor, prevVisit }) {
+      if (!items || items.length === 0) return null;
+      return React.createElement("div", { style: heroWrapS },
+        React.createElement("p", { style: heroLabelS },
+          React.createElement("span", { style: heroLabelDotS }),
+          "Top today"
+        ),
+        items.map(function(item, idx) {
+          return React.createElement("a", {
+            key: item.url,
+            href: item.url,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            style: Object.assign({}, heroItemLinkS, idx === items.length - 1 ? { borderBottom: "none" } : {}, readUrls && readUrls.has(item.url) ? { opacity: 0.55 } : {}),
+            onClick: function() { if (markRead) markRead(item.url); },
+          },
+            React.createElement("div", { style: heroRowS },
+              React.createElement("span", { style: heroRankS }, String(idx + 1).padStart(2, "0")),
+              React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                React.createElement("p", { style: heroItemTitleS }, item.title),
+                React.createElement("div", { style: articleMetaS },
+                  faviconUrl(item.url) && React.createElement("img", { src: faviconUrl(item.url), alt: "", style: faviconS, loading: "lazy", referrerPolicy: "no-referrer", onError: function(e) { e.target.style.display = "none"; } }),
+                  React.createElement("span", { style: metaBrandS(sectionColor) }, item.source),
+                  domainOf(item.url) && React.createElement("span", { style: domainS }, "· " + domainOf(item.url)),
+                  item.points > 0 && React.createElement("span", { style: statS, title: item.points + " points" },
+                    React.createElement("i", { className: "fas fa-arrow-up", style: statIconS, "aria-hidden": true }),
+                    formatCount(item.points)
+                  ),
+                  item.comments > 0 && React.createElement("span", { style: statS, title: item.comments + " comments" },
+                    React.createElement("i", { className: "far fa-comment", style: statIconS, "aria-hidden": true }),
+                    formatCount(item.comments)
+                  ),
+                  item.date && React.createElement("span", { style: metaTextS }, timeAgo(item.date))
+                )
+              )
+            )
+          );
+        })
+      );
+    }
+
+    function UnifiedFeed({ feeds, sectionColor, readUrls, markRead, pinnedUrls, togglePin, searchQuery, sourceFilter, hideRead, hidePinned, prevVisit }) {
       const [allItems, setAllItems] = useState([]);
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(false);
       const [focusIdx, setFocusIdx] = useState(-1);
       const [displayCount, setDisplayCount] = useState(30);
       const [selectedDay, setSelectedDay] = useState(null);
+      const [pinnedOpen, setPinnedOpen] = useState(function() {
+        var v = localStorage.getItem("news_pinned_open");
+        return v === null ? true : v === "1";
+      });
+      function togglePinnedOpen() {
+        setPinnedOpen(function(v) {
+          var next = !v;
+          localStorage.setItem("news_pinned_open", next ? "1" : "0");
+          return next;
+        });
+      }
       const PAGE_SIZE = 30;
 
       useEffect(function() {
@@ -733,8 +1014,22 @@
       }
 
       // Slice to display count
+      // Pick hero items from the full (unfiltered) pool so search/filters don't suppress the "Top today" picks.
+      // Skip heroes when any filter or search is active — hero feature is a clean-feed concept.
+      var heroes = (q || s || selectedDay || hideRead || hidePinned) ? [] : pickHeroes(allItems, readUrls, 3);
+      var heroUrls = new Set(heroes.map(function(h) { return h.url; }));
+
       var shownItems = filtered.slice(0, displayCount);
       var hasMore = filtered.length > displayCount;
+
+      // Remove unpinned hero items from the regular feed to avoid duplication.
+      // Pinned heroes stay — user-intent wins; they appear in both Top today and the Pinned strip.
+      if (heroUrls.size > 0) {
+        shownItems = shownItems.filter(function(item) {
+          if (pinnedUrls && pinnedUrls.has(item.url)) return true;
+          return !heroUrls.has(item.url);
+        });
+      }
 
       // Apply hide/show toggles
       var pinnedItems = shownItems.filter(function(item) { return pinnedUrls && pinnedUrls.has(item.url); });
@@ -792,9 +1087,24 @@
           isPinned: pinnedUrls ? pinnedUrls.has(item.url) : false,
           onTogglePin: togglePin,
           isFocused: idx === focusIdx,
+          isNew: isNewItem(item, prevVisit),
           "data-focus": idx === focusIdx ? "true" : undefined,
         });
       });
+
+      // Count truly-visible new items (not read, in filtered set)
+      var newCount = allVisible.filter(function(item) {
+        if (!isNewItem(item, prevVisit)) return false;
+        if (readUrls && readUrls.has(item.url)) return false;
+        return true;
+      }).length;
+
+      function jumpToFirstNew() {
+        setTimeout(function() {
+          var el = document.querySelector('.news-main [data-new="true"]');
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 0);
+      }
 
       var loadMoreBtn = !loading && hasMore ? React.createElement("button", {
         key: "loadmore",
@@ -803,9 +1113,14 @@
         style: { display: "block", width: "100%", marginTop: 10, justifyContent: "center" }
       }, "Show more (" + (filtered.length - displayCount) + " remaining)") : null;
 
+      var pinnedHeader = pinnedItems.length > 0 ? React.createElement("p", { style: pinnedLabelS, onClick: togglePinnedOpen, title: pinnedOpen ? "Collapse pinned" : "Expand pinned" },
+        "\u2B50 Pinned",
+        React.createElement("span", { style: pinnedCountS }, pinnedItems.length),
+        React.createElement("i", { className: "fas " + (pinnedOpen ? "fa-chevron-up" : "fa-chevron-down"), style: pinnedChevS, "aria-hidden": true })
+      ) : null;
       var pinnedEls = pinnedItems.length > 0 ? React.createElement("div", { style: pinnedSectionS, key: "pinned" },
-        React.createElement("p", { style: pinnedLabelS }, "\u2B50 Pinned"),
-        renderItems.slice(0, pinnedItems.length)
+        pinnedHeader,
+        pinnedOpen ? renderItems.slice(0, pinnedItems.length) : null
       ) : null;
 
       var unpinnedEls = renderItems.slice(pinnedItems.length);
@@ -817,6 +1132,18 @@
           selectedDay: selectedDay,
           onSelectDay: setSelectedDay,
           days: 30,
+          newCount: newCount,
+          prevVisit: prevVisit,
+          onJumpNew: jumpToFirstNew,
+        }),
+        !loading && heroes.length > 0 && React.createElement(TodayCard, {
+          items: heroes,
+          readUrls: readUrls,
+          markRead: markRead,
+          pinnedUrls: pinnedUrls,
+          togglePin: togglePin,
+          sectionColor: sectionColor,
+          prevVisit: prevVisit,
         }),
         React.createElement("div", { style: feedListS },
         loading && React.createElement("div", { style: skelRowS },
@@ -833,12 +1160,12 @@
         !loading && unpinnedEls,
         !loading && allVisible.length > 0 && React.createElement("p", { style: countS }, allVisible.length + " items" + (q ? " matching \u201C" + searchQuery + "\u201D" : "")),
         loadMoreBtn,
-        !loading && React.createElement("p", { style: shortcutsS }, "j/k: navigate \u00B7 o/Enter: open \u00B7 \u2B50: pin")
+        !loading && React.createElement("p", { style: shortcutsS }, "j/k: navigate \u00B7 o/Enter: open")
         )
       );
     }
 
-    const secHeader = (open) => ({ display: "flex", alignItems: "center", gap: 10, marginBottom: open ? 14 : 0, cursor: "pointer", userSelect: "none" });
+    const secHeader = (open) => ({ display: "flex", alignItems: "center", gap: 10, marginBottom: open ? 14 : 0, cursor: "pointer", userSelect: "none", position: "sticky", top: 0, background: "var(--color-bg)", paddingTop: 8, paddingBottom: 10, zIndex: 5 });
     const secIconBox = (bg) => ({ width: 30, height: 30, borderRadius: 8, background: bg, display: "flex", alignItems: "center", justifyContent: "center" });
     const secIcon = (c) => ({ fontSize: 16, color: c });
     const secTitle = { margin: 0, fontSize: 15, fontWeight: 500, color: "var(--color-text-primary)", flex: 1 };
@@ -846,12 +1173,13 @@
     const secChev = { fontSize: 14, color: "var(--color-text-tertiary)" };
     const secWrap = { marginBottom: "2rem" };
 
-    function Section({ id, section, readUrls, markRead, pinnedUrls, togglePin, searchQuery, sourceFilter, hideRead, hidePinned }) {
+    function Section({ id, section, readUrls, markRead, pinnedUrls, togglePin, searchQuery, sourceFilter, hideRead, hidePinned, prevVisit, hideHeader, onRemoveLang }) {
       const [open, setOpen] = useState(true);
       const [refreshKey, setRefreshKey] = useState(0);
 
       return (
         <div style={secWrap}>
+          {!hideHeader && (
           <div style={secHeader(open)} onClick={() => setOpen((v) => !v)}>
             <div style={secIconBox(section.bg)}>
               <i className={"fas " + section.icon} style={secIcon(section.color)} aria-hidden="true" />
@@ -862,17 +1190,18 @@
             </button>
             <i className={"fas " + (open ? "fa-chevron-up" : "fa-chevron-down")} style={secChev} aria-hidden="true" />
           </div>
+          )}
 
           {open && section.layout === "unified" && (
             <div key={refreshKey}>
-              <UnifiedFeed key={refreshKey} feeds={section.feeds} sectionColor={section.color} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} searchQuery={searchQuery} sourceFilter={sourceFilter} hideRead={hideRead} hidePinned={hidePinned} />
+              <UnifiedFeed key={refreshKey} feeds={section.feeds} sectionColor={section.color} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} searchQuery={searchQuery} sourceFilter={sourceFilter} hideRead={hideRead} hidePinned={hidePinned} prevVisit={prevVisit} />
             </div>
           )}
 
           {open && section.layout !== "unified" && (
             <div key={refreshKey} className="news-section-grid">
               {section.feeds.map((feed) => (
-                <FeedColumn key={feed.id + "-" + refreshKey} feed={feed} sectionColor={section.color} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} />
+                <FeedColumn key={feed.id + "-" + refreshKey} feed={feed} sectionColor={section.color} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} prevVisit={prevVisit} onRemoveLang={onRemoveLang} />
               ))}
             </div>
           )}
@@ -880,21 +1209,103 @@
       );
     }
 
-    const headerBar = { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.75rem", paddingBottom: "0.75rem", borderBottom: "0.5px solid var(--color-border-tertiary)" };
-    const headerH1 = { margin: 0, fontSize: 20, fontWeight: 500, color: "var(--color-text-primary)" };
-    const headerIcon = { fontSize: 18, marginRight: 8, verticalAlign: -2 };
-    const headerSub = { margin: "2px 0 0", fontSize: 12, color: "var(--color-text-tertiary)" };
-    const footerS = { fontSize: 11, color: "var(--color-text-tertiary)", textAlign: "center", marginTop: "1rem" };
+    const headerBar = { display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: "0.6rem", paddingBottom: "0.4rem", borderBottom: "0.5px solid var(--color-border-tertiary)" };
+    const headerLeftS = { display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", minWidth: 0 };
+    const headerH1 = { margin: 0, fontSize: 22, fontWeight: 700, color: "var(--color-text-primary)", letterSpacing: "-0.4px", fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" };
+    const headerIcon = { fontSize: 18, marginRight: 6, verticalAlign: -1, color: "var(--color-accent)", fontStyle: "normal" };
+    const headerTag = { margin: 0, fontSize: 12, color: "var(--color-text-muted)", fontStyle: "italic", fontFamily: "Georgia, 'Times New Roman', serif" };
+    const headerSub = { margin: 0, fontSize: 11, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "1.3px", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontWeight: 500, fontVariantNumeric: "tabular-nums" };
+    const headerRightS = { display: "flex", alignItems: "center", gap: 8 };
+    const headerDividerS = { color: "var(--color-border)", margin: "0 2px" };
+    const iconBtnS = { width: 32, height: 32, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" };
+    const colophonS = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "8px 0 4px", marginTop: 8, borderTop: "0.5px solid var(--color-border-tertiary)", fontSize: 11, color: "var(--color-text-tertiary)", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", flexWrap: "wrap" };
+    const colophonSocialsS = { display: "inline-flex", gap: 12, alignItems: "center" };
+    const colophonLinkS = { color: "var(--color-text-tertiary)", textDecoration: "none", fontSize: 14, display: "inline-flex", alignItems: "center" };
+    const railTitleS = { margin: 0, fontSize: 11, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "1.3px", fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontWeight: 500, display: "flex", alignItems: "center", gap: 6 };
+    const railTitleIconS = { fontSize: 12, color: "#1D9E75" };
+    const railHeadS = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 };
+    const addLangCompactBtnS = { display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "0.5px dashed var(--color-border)", background: "transparent", color: "var(--color-text-muted)", cursor: "pointer", fontFamily: "inherit" };
 
-    const searchBarS = { width: "100%", maxWidth: 420, padding: "8px 12px", fontSize: 13, border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text-primary)", outline: "none" };
-    const searchWrapS = { marginBottom: "1.25rem" };
-    const filterPillsS = { display: "flex", gap: 6, flexWrap: "wrap", marginBottom: "1.25rem" };
+    const searchRowS = { display: "flex", alignItems: "center", gap: 8, marginBottom: "0.6rem", position: "relative" };
+    const searchBarS = { flex: 1, padding: "8px 12px", fontSize: 13, border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text-primary)", outline: "none" };
+    const kebabBtnS = { width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text)", cursor: "pointer", flexShrink: 0, position: "relative" };
+    const kebabBtnActiveS = Object.assign({}, kebabBtnS, { borderColor: "var(--color-accent)", color: "var(--color-accent)" });
+    const filterDotS = { position: "absolute", top: 4, right: 4, width: 6, height: 6, borderRadius: "50%", background: "var(--color-accent)" };
+    const popoverS = { position: "absolute", top: "calc(100% + 6px)", right: 0, minWidth: 280, maxWidth: 360, background: "var(--color-bg-card)", border: "0.5px solid var(--color-border)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 6px 24px rgba(0,0,0,0.08)", zIndex: 50 };
+    const popoverLabelS = { fontSize: 10, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.6px", margin: "2px 0 6px" };
+    const popoverDividerS = { height: "0.5px", background: "var(--color-border)", margin: "10px -12px" };
+    const filterPillsS = { display: "flex", gap: 6, flexWrap: "wrap" };
     const pillS = { fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 20, border: "0.5px solid var(--color-border)", background: "transparent", color: "var(--color-text-muted)", cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s ease" };
     const pillActiveS = { fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 20, border: "0.5px solid var(--color-accent)", background: "var(--color-accent-light)", color: "var(--color-accent)", cursor: "pointer", fontFamily: "inherit" };
-    const pillSepS = { margin: "0 4px", color: "var(--color-border)", fontSize: 14, alignSelf: "center" };
 
     // Derive all unique source names from the tech section feeds
     var ALL_SOURCES = SECTIONS.tech.feeds.map(function(f) { return f.name; });
+
+    function slugifyLang(s) {
+      return String(s || "").trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9.+-]/g, "");
+    }
+    function useCustomLangs() {
+      const [langs, setLangs] = useState(function() {
+        try { var v = localStorage.getItem("news_custom_langs"); return v ? JSON.parse(v) : []; }
+        catch (e) { return []; }
+      });
+      function persist(next) {
+        setLangs(next);
+        try { localStorage.setItem("news_custom_langs", JSON.stringify(next)); } catch (e) {}
+      }
+      function add(name) {
+        var clean = String(name || "").trim();
+        if (!clean) return;
+        var slug = slugifyLang(clean);
+        if (!slug) return;
+        // dedupe against built-ins and existing custom
+        var builtIn = SECTIONS.github.feeds.map(function(f) { return slugifyLang(f.lang || "all-languages"); });
+        if (builtIn.indexOf(slug) !== -1) return;
+        if (langs.map(slugifyLang).indexOf(slug) !== -1) return;
+        persist(langs.concat([clean]));
+      }
+      function remove(name) {
+        persist(langs.filter(function(l) { return l !== name; }));
+      }
+      return { langs: langs, addLang: add, removeLang: remove };
+    }
+
+    const addLangBtnS = { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, padding: "6px 10px", borderRadius: 6, border: "0.5px dashed var(--color-border)", background: "transparent", color: "var(--color-text-muted)", cursor: "pointer", fontFamily: "inherit", width: "100%", justifyContent: "center", marginTop: 8 };
+    const addLangFormS = { display: "flex", gap: 6, marginTop: 8 };
+    const addLangInputS = { flex: 1, padding: "6px 10px", fontSize: 12, border: "0.5px solid var(--color-border-tertiary)", borderRadius: 6, background: "var(--color-background-primary)", color: "var(--color-text)", outline: "none" };
+    const removeLangBtnS = { background: "none", border: "none", color: "var(--color-text-tertiary)", cursor: "pointer", padding: "2px 4px", fontSize: 11, marginLeft: 4 };
+
+    function AddLanguage({ onAdd, compact }) {
+      const [editing, setEditing] = useState(false);
+      const [value, setValue] = useState("");
+      function submit(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        if (value.trim()) { onAdd(value); setValue(""); setEditing(false); }
+      }
+      if (!editing) {
+        return React.createElement("button", { style: compact ? addLangCompactBtnS : addLangBtnS, onClick: function() { setEditing(true); }, title: "Add a language to track" },
+          React.createElement("i", { className: "fas fa-plus", "aria-hidden": true }),
+          compact ? "Language" : "Add language"
+        );
+      }
+      return React.createElement("form", { style: addLangFormS, onSubmit: submit },
+        React.createElement("input", {
+          type: "text",
+          autoFocus: true,
+          placeholder: "Rust, Go, TypeScript…",
+          style: addLangInputS,
+          value: value,
+          onChange: function(e) { setValue(e.target.value); },
+          onKeyDown: function(e) { if (e.key === "Escape") { setEditing(false); setValue(""); } },
+        }),
+        React.createElement("button", { type: "submit", className: "news-dash-btn" },
+          React.createElement("i", { className: "fas fa-check", "aria-hidden": true })
+        ),
+        React.createElement("button", { type: "button", className: "news-dash-btn", onClick: function() { setEditing(false); setValue(""); } },
+          React.createElement("i", { className: "fas fa-xmark", "aria-hidden": true })
+        )
+      );
+    }
 
     function App() {
       const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -903,7 +1314,16 @@
       const [sourceFilter, setSourceFilter] = useState('');
       const [hideRead, setHideRead] = useState(false);
       const [hidePinned, setHidePinned] = useState(false);
+      const [filterOpen, setFilterOpen] = useState(false);
       const { readUrls, pinnedUrls, markRead, togglePin, ready } = usePersistState();
+      const prevVisit = useLastVisit();
+      const { langs: customLangs, addLang, removeLang } = useCustomLangs();
+
+      const ghSection = Object.assign({}, SECTIONS.github, {
+        feeds: SECTIONS.github.feeds.concat(customLangs.map(function(name) {
+          return { id: "gh_custom_" + slugifyLang(name), name: name, type: "gh_rss", lang: name, icon: "fa-code", isCustom: true };
+        })),
+      });
 
       const refreshAll = () => {
         setGlobalKey((k) => k + 1);
@@ -916,65 +1336,109 @@
       }, []);
 
       return (
-        <div>
+        <div className="news-app-root">
           <div style={headerBar}>
-            <div>
+            <div style={headerLeftS}>
+              <a href={"{{ '/' | relative_url }}"} className="news-dash-btn" title="Back to home" aria-label="Back to home" style={iconBtnS}>
+                <i className="fas fa-arrow-left" aria-hidden="true" />
+              </a>
               <h1 style={headerH1}>
-                <i className="fas fa-border-all" style={headerIcon} aria-hidden="true" />
-                Your feed
+                <i className="fas fa-infinity" style={headerIcon} aria-hidden="true" />
+                Doomscroll
               </h1>
-              <p style={headerSub}>
-                Updated {lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · auto-refreshes every 30 min
-              </p>
+              <span style={headerDividerS}>·</span>
+              <p style={headerTag}>the algorithm-free firehose</p>
             </div>
-            <button onClick={refreshAll} className="news-dash-btn">
-              <i className="fas fa-rotate-right" aria-hidden="true" />
-              Refresh all
-            </button>
+            <div style={headerRightS}>
+              <p style={headerSub}>
+                {lastRefresh.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })} · {lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </p>
+              <button onClick={() => window.toggleNewsTheme()} className="news-dash-btn" title="Toggle theme" aria-label="Toggle theme" style={iconBtnS}>
+                <i className="fas fa-circle-half-stroke" aria-hidden="true" />
+              </button>
+              <button onClick={refreshAll} className="news-dash-btn" title="Refresh all" aria-label="Refresh all" style={iconBtnS}>
+                <i className="fas fa-rotate-right" aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
-          <div style={searchWrapS}>
+          <div style={searchRowS}>
             <input
               type="text"
-              placeholder="Search across all feeds (title or source)..."
+              placeholder="Search titles and sources…"
               style={searchBarS}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            <button
+              style={(sourceFilter || hideRead || hidePinned) ? kebabBtnActiveS : kebabBtnS}
+              onClick={() => setFilterOpen(function(v) { return !v; })}
+              title="Filters"
+              aria-label="Filters"
+            >
+              <i className="fas fa-ellipsis-vertical" aria-hidden="true" />
+              {(sourceFilter || hideRead || hidePinned) && <span style={filterDotS} />}
+            </button>
+            {filterOpen && (
+              <div style={popoverS}>
+                <p style={popoverLabelS}>Source</p>
+                <div style={filterPillsS}>
+                  <button
+                    style={sourceFilter === '' ? pillActiveS : pillS}
+                    onClick={() => setSourceFilter('')}
+                  >All</button>
+                  {ALL_SOURCES.map(function(src) {
+                    return (
+                      <button
+                        key={src}
+                        style={sourceFilter === src ? pillActiveS : pillS}
+                        onClick={() => setSourceFilter(sourceFilter === src ? '' : src)}
+                      >{src}</button>
+                    );
+                  })}
+                </div>
+                <div style={popoverDividerS} />
+                <p style={popoverLabelS}>View</p>
+                <div style={filterPillsS}>
+                  <button
+                    style={hideRead ? pillActiveS : pillS}
+                    onClick={() => setHideRead(function(v) { return !v; })}
+                  >{hideRead ? "✓ Showing unread" : "Hide read"}</button>
+                  <button
+                    style={hidePinned ? pillActiveS : pillS}
+                    onClick={() => setHidePinned(function(v) { return !v; })}
+                  >{hidePinned ? "★ Pinned hidden" : "Hide pinned"}</button>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div style={filterPillsS}>
-            <button
-              style={sourceFilter === '' ? pillActiveS : pillS}
-              onClick={() => setSourceFilter('')}
-            >All</button>
-            {ALL_SOURCES.map(function(src) {
-              return (
-                <button
-                  key={src}
-                  style={sourceFilter === src ? pillActiveS : pillS}
-                  onClick={() => setSourceFilter(sourceFilter === src ? '' : src)}
-                >{src}</button>
-              );
-            })}
-            <span style={pillSepS}>|</span>
-            <button
-              style={hideRead ? pillActiveS : pillS}
-              onClick={() => setHideRead(function(v) { return !v; })}
-            >{hideRead ? "✓ Showing unread" : "Hide read"}</button>
-            <button
-              style={hidePinned ? pillActiveS : pillS}
-              onClick={() => setHidePinned(function(v) { return !v; })}
-            >{hidePinned ? "★ Pinned hidden" : "Hide pinned"}</button>
+          <div className="news-layout news-layout-fill">
+            <div className="news-main">
+              <Section key={"tech-" + globalKey} id="tech" section={SECTIONS.tech} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} searchQuery={searchQuery} sourceFilter={sourceFilter} hideRead={hideRead} hidePinned={hidePinned} prevVisit={prevVisit} hideHeader={true} />
+            </div>
+            <aside className="news-rail">
+              <div style={railHeadS}>
+                <p style={railTitleS}>
+                  <i className="fab fa-github" style={railTitleIconS} aria-hidden="true" />
+                  Trending repos
+                </p>
+                <AddLanguage onAdd={addLang} compact={true} />
+              </div>
+              <Section key={"github-" + globalKey} id="github" section={ghSection} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} searchQuery={searchQuery} sourceFilter={sourceFilter} hideRead={hideRead} hidePinned={hidePinned} prevVisit={prevVisit} hideHeader={true} onRemoveLang={removeLang} />
+            </aside>
           </div>
 
-          {Object.entries(SECTIONS).map(([id, section]) => (
-            <Section key={id + "-" + globalKey} id={id} section={section} readUrls={readUrls} markRead={markRead} pinnedUrls={pinnedUrls} togglePin={togglePin} searchQuery={searchQuery} sourceFilter={sourceFilter} hideRead={hideRead} hidePinned={hidePinned} />
-          ))}
+          <div style={colophonS}>
+            <span>© {lastRefresh.getFullYear()} Doomscroll · the algorithm-free firehose</span>
+            <span style={colophonSocialsS}>
+              <a href="https://github.com/arvindkumarc" target="_blank" rel="noopener" aria-label="GitHub" style={colophonLinkS}><i className="fab fa-github"></i></a>
+              <a href="https://twitter.com/arvindkumarc" target="_blank" rel="noopener" aria-label="Twitter" style={colophonLinkS}><i className="fab fa-twitter"></i></a>
+              <a href="https://www.linkedin.com/in/arvindkumarchinniah/" target="_blank" rel="noopener" aria-label="LinkedIn" style={colophonLinkS}><i className="fab fa-linkedin-in"></i></a>
+              <a href="https://medium.com/@arvindkumarc" target="_blank" rel="noopener" aria-label="Medium" style={colophonLinkS}><i className="fab fa-medium"></i></a>
+            </span>
+          </div>
 
-          <p style={footerS}>
-            Sources: Hacker News · Dev.to · Lobsters · Reddit · ArXiv · GitHub Trending
-          </p>
         </div>
       );
     }

@@ -98,7 +98,7 @@ function parseRSS(xml, sourceName, limit) {
       title,
       url,
       source: sourceName,
-      meta: author,
+      author: author || '',
       date: date || null,
     });
   }
@@ -129,7 +129,10 @@ async function fetchHN() {
       title: i.title,
       url: i.url || `https://news.ycombinator.com/item?id=${i.id}`,
       source: 'Hacker News',
-      meta: `${i.score || 0} pts · ${i.descendants || 0} comments`,
+      points: i.score || 0,
+      comments: i.descendants || 0,
+      author: i.by || '',
+      hnId: i.id,
       date: i.time ? new Date(i.time * 1000).toISOString() : null,
     }));
   } catch (e) {
@@ -155,7 +158,9 @@ async function fetchDevTo() {
             title: a.title,
             url: a.url,
             source: `Dev.to · #${(a.tag_list && a.tag_list[0]) || tag}`,
-            meta: `❤ ${a.positive_reactions_count} · ${a.comments_count} comments`,
+            points: a.positive_reactions_count || 0,
+            comments: a.comments_count || 0,
+            author: (a.user && a.user.name) || '',
             date: a.published_at,
           });
         });
