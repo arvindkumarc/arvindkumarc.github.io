@@ -5,48 +5,57 @@ title: Home
 
 # Hi, I'm Arvind Kumar C
 
-**2 decades** of experience in software design, development and delivery.
+**20 years** building software that ships. Engineering leader, full-stack developer, and functional programming advocate.
 
-Full stack developer, functional programming enthusiast, business-driven data science practitioner, and lover of minimalist architecture.
+<span class="highlight-line">Last shipped: Contract Intelligence Platform — RAG pipeline across 1,000+ vendors.</span>
 
 ---
 
-<div class="about-section">
+<div class="about-grid">
 
-<div class="project-card" data-index="1" markdown="1">
+<div class="about-col" markdown="1">
 
 ## Currently
 
-**Director of Engineering** at [Fluxon](https://www.fluxon.com){:target="_blank"}
+**Director of Engineering** at [Fluxon](https://www.fluxon.com){:target="_blank"} — leading distributed teams building AI-native products and multi-agent platforms.
 
 </div>
 
-<div class="project-card" data-index="2" markdown="1">
+<div class="about-col" markdown="1">
 
 ## Previously
 
-**Chief Engineer/CTO** at [Delium](https://www.delium.ai){:target="_blank"}
+**Chief Engineer / CTO** at [Delium](https://www.delium.ai){:target="_blank"}
 
 **Lead Consultant** at [ThoughtWorks](https://www.thoughtworks.com/en-in){:target="_blank"}
 
 </div>
 
-<div class="project-card" data-index="3" markdown="1">
+</div>
 
-## What I Do
+<div class="expertise-grid">
 
-- High scalable, performance-centric applications
-- Managed to develop and deliver application that scaled to **~2000 requests/sec** with minimal footprint
-- High grossing applications critical for everyday executions in Finance and tracking processes
-- Plan, Account, Deliver work across smaller teams
+<div class="expertise-col" markdown="1">
+
+#### Domains
+
+Telecom &middot; Fintech &middot; AI/ML
 
 </div>
 
-<div class="project-card" data-index="4" markdown="1">
+<div class="expertise-col" markdown="1">
 
-## Practices
+#### Stack
 
-Agile/Scrum, Continuous Delivery, TDD
+Java &middot; Python &middot; TypeScript &middot; React &middot; Angular &middot; Spring Boot &middot; Rails &middot; Android &middot; Swift
+
+</div>
+
+<div class="expertise-col" markdown="1">
+
+#### Data & AI
+
+Postgres &middot; BigQuery &middot; DynamoDB &middot; RAG Pipelines &middot; Agentic AI
 
 </div>
 
@@ -56,8 +65,8 @@ Agile/Scrum, Continuous Delivery, TDD
 <div class="hscroll-outer">
 <div class="hscroll-inner">
 <div class="section-divider">
-<h2>Projects</h2>
-<p>A selection of projects I've worked on throughout my career.</p>
+<h2>Selected Work</h2>
+<p>Outcomes from two decades across startups, consultancies, and enterprises.</p>
 <div class="filter-pills">
 <button class="filter-pill active" data-filter="all">All</button>
 <button class="filter-pill" data-filter="ai">AI / ML</button>
@@ -70,145 +79,145 @@ Agile/Scrum, Continuous Delivery, TDD
 
 <div class="project-card" data-tags="ai" markdown="1">
 
-#### Fitness Class Discovery Agent
+#### Cut class scheduling from days to minutes
 
-**AI-powered chat agent** that finds fitness classes within an organization — matches by **closest location, preferences, and favorites**, with **direct booking from chat**. Part of a multi-agent platform using Google's **A2A protocol**.
+AI chat agent that finds fitness classes by location, preference, and favorites — with direct booking from the conversation. Part of a multi-agent platform built on Google's A2A protocol.
 
-*Tech: Python, Google A2A, Vertex AI, Gemini 2.5 Flash, Gemini 3*
-
-</div>
-
-<div class="project-card" data-tags="ai enterprise" markdown="1">
-
-#### Contract Intelligence Platform
-
-**RAG-powered contract management** for **~1000 vendors** — ask natural language questions to find, compare, and analyze contracts across years. Embeddings stored in **Vertex RAG Store** for fast retrieval across multi-vendor projects and services.
-
-*Tech: Angular, Java, Vertex AI, RAG*
+<span class="tech-tag">Python, Google A2A, Vertex AI, Gemini 2.5 Flash, Gemini 3</span>
 
 </div>
 
 <div class="project-card" data-tags="ai enterprise" markdown="1">
 
-#### AI driven Business Intelligence - Finance and Retail
+#### Answered "what's in our vendor contracts?" in seconds
 
-Retail businesses with time-consuming monotonous tasks **automated with intelligence**, saving huge amounts of time and delivering value-based returns. Also adapted to **predict cash replenishment** at ATM Kiosk machines.
+RAG-powered contract intelligence for ~1,000 vendors. Natural language search across years of contracts, comparing terms across multi-vendor projects. Replaced weeks of legal review with a query.
 
-*Tech: R, Python, Java, Go, Kotlin, PostgreSQL, Spring Boot, Flask, ReactJS, Docker, Prometheus*
+<span class="tech-tag">Angular, Java, Vertex AI, RAG</span>
+
+</div>
+
+<div class="project-card" data-tags="ai enterprise" markdown="1">
+
+#### Automated retail operations, predicted ATM cash demand
+
+Intelligent automation for retail businesses — time-consuming tasks replaced with AI-driven workflows. Predicted cash replenishment needs for ATM kiosks, reducing stockouts and surpluses.
+
+<span class="tech-tag">R, Python, Java, Go, Kotlin, PostgreSQL, Spring Boot, Flask, ReactJS, Docker, Prometheus</span>
 
 </div>
 
 <div class="project-card" data-tags="consumer" markdown="1">
 
-#### Crypto based gaming platform
+#### Built a token economy for sports gaming
 
-Gaming platform using **Token Bonding Curve** to dynamically adjust athlete prices, giving token holders **demand and performance-based value**.
+Gaming platform using Token Bonding Curve to dynamically adjust athlete prices. Token holders gain demand and performance-based value — a real DeFi mechanic in a consumer product.
 
-*Tech: NodeJS, Firebase, React Native, Solana Blockchain*
+<span class="tech-tag">NodeJS, Firebase, React Native, Solana Blockchain</span>
 
 </div>
 
 <div class="project-card" data-tags="enterprise" markdown="1">
 
-#### Targeted Advertisements Platform
+#### Connected online browsing to in-store notifications
 
-Correlating **physical and virtual consumer experiences** for a leading shopping mall. Like an item online? Get a **notification when you walk in** to the mall where it's available.
+Correlated physical and virtual consumer experiences for a major shopping mall. Liked an item online? Got a notification when you walked into the mall where it was available in-store.
 
-*Tech: Java, Coffeescript, AWS Kinesis, Apache Storm, BLE beacon integration*
+<span class="tech-tag">Java, Coffeescript, AWS Kinesis, Apache Storm, BLE beacon integration</span>
 
 </div>
 
 <div class="project-card" data-tags="social-impact" markdown="1">
 
-#### Helpline for Intensive Care - Ghana, Africa
+#### Delivered pre and post-natal care to remote Ghana
 
-**Pre and post-natal care** for hilly regions in Ghana — daily calls with health advice, emergency nurse dispatch. A collaboration between **ThoughtWorks**, **Bill-Melinda Gates Foundation**, and **Grameen Foundation**.
+Daily health advice calls and emergency nurse dispatch for hilly regions in Ghana. A collaboration between ThoughtWorks, the Bill & Melinda Gates Foundation, and Grameen Foundation.
 
-*Tech: Java, ActiveMQ, Asterisk, MySQL, Spring*
+<span class="tech-tag">Java, ActiveMQ, Asterisk, MySQL, Spring</span>
 
 </div>
 
 <div class="project-card" data-tags="consumer" markdown="1">
 
-#### Habitus
+#### Habitus — family habit building, together
 
-Family habit building app — helps households **build and track habits together** with shared accountability and motivation.
+Helps households build and track habits with shared accountability and motivation.
 
 [Visit Site →](https://habitus.arvindc.in)
 
-*Tech: React, Supabase*
+<span class="tech-tag">React, Supabase</span>
 
 </div>
 
 <div class="project-card" data-tags="enterprise" markdown="1">
 
-#### Enterprise Feedback Tablet App
+#### Deployed enterprise feedback across managed Android fleets
 
-**MDM-managed tablet application** for collecting feedback at enterprise locations — deployed across managed Android devices with **centralized control and reporting**.
+MDM-managed tablet application for collecting feedback at enterprise locations — deployed across managed Android devices with centralized control and reporting.
 
-*Tech: NextJS, TypeScript, PostgreSQL, Android MDM, Playwright*
-
-</div>
-
-<div class="project-card" data-tags="consumer" markdown="1">
-
-#### Movie Ticket Aggregator
-
-Aggregating **tier 2 town theatres** across India into one booking platform. The challenge: **realtime seat blocking** against Remote box office (Vista) systems.
-
-*Tech: Golang, PostgreSQL, LocustIO*
+<span class="tech-tag">NextJS, TypeScript, PostgreSQL, Android MDM, Playwright</span>
 
 </div>
 
 <div class="project-card" data-tags="consumer" markdown="1">
 
-#### MSV Payroll
+#### Aggregated India's tier-2 town theatres into one platform
 
-Payroll tool for a catering business — **record programs, manage staff**, and calculate daily wages in one place.
+Real-time seat blocking against Vista remote box office systems. Brought dozens of independent theatres online for the first time.
+
+<span class="tech-tag">Golang, PostgreSQL, LocustIO</span>
+
+</div>
+
+<div class="project-card" data-tags="consumer" markdown="1">
+
+#### MSV Payroll — simplified daily wages for catering
+
+Payroll tool that records programs, manages staff, and calculates daily wages for a catering business.
 
 [Visit Site →](https://msv.arvindc.in)
 
-*Tech: React, Python, FastAPI*
+<span class="tech-tag">React, Python, FastAPI</span>
 
 </div>
 
 <div class="project-card" data-tags="enterprise" markdown="1">
 
-#### K12 Education Suite
+#### Real-time device integration for K12 classrooms
 
-Tablet-based education for K12 kids — **realtime device integration** (BYOD or Managed), classroom presence, session management, **homework sharing**, and grading.
+Tablet-based education platform — BYOD or managed devices, classroom presence, session management, homework sharing, and grading in real time.
 
-*Tech: Ruby On Rails, XMPP, Android, Gatling, MySQL, Cucumber*
-
-</div>
-
-<div class="project-card" data-tags="enterprise" markdown="1">
-
-#### Element Management System
-
-**High-performance monitoring** for a switch manufacturer. Pluggable architecture supporting **any device and module** dynamically.
-
-*Tech: J2EE, JBoss, MObjects, JMS, MySQL*
+<span class="tech-tag">Ruby On Rails, XMPP, Android, Gatling, MySQL, Cucumber</span>
 
 </div>
 
 <div class="project-card" data-tags="enterprise" markdown="1">
 
-#### Universal Order Management System
+#### High-performance monitoring for network switches
 
-Antibody producer upgrading from legacy to a **completely rewritten system**. Order management handling **delivery timelines across the globe**.
+Pluggable architecture supporting any device and module dynamically. Monitored switch fleets at scale for a major manufacturer.
 
-*Tech: C#.Net, MSSQL Server*
+<span class="tech-tag">J2EE, JBoss, MObjects, JMS, MySQL</span>
+
+</div>
+
+<div class="project-card" data-tags="enterprise" markdown="1">
+
+#### Rewrote a global antibody producer's order system
+
+Replaced a legacy order management system handling delivery timelines across the globe. Complete rewrite for a mission-critical supply chain.
+
+<span class="tech-tag">C#.Net, MSSQL Server</span>
 
 </div>
 
 <div class="project-card" data-tags="social-impact" markdown="1">
 
-#### Hospital Management System
+#### Complete hospital management for TLM hospitals across India
 
-Complete solution for **TLM hospitals across India** — Patient Records, Pharmacy, and Doctor visits in one system.
+Patient records, pharmacy, and doctor visits — one unified system deployed across TLM hospitals nationwide.
 
-*Tech: Java, Spring, Hibernate, Javascript, jQuery*
+<span class="tech-tag">Java, Spring, Hibernate, Javascript, jQuery</span>
 
 </div>
 
