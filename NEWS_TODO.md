@@ -18,9 +18,9 @@ Done — see `_layouts/news.html`:
 - [x] **Hide-pinned / Hide-read on the GitHub rail** — `FeedColumn` now honors both toggles via props from `Section`.
 - [ ] **HN discussion link beyond Tech.** `hnId` only appears on items fetched via the worker's aggregated endpoint (Hacker News items in the Tech feed). It does not show on cross-posted HN stories surfaced through other sources. Fine for v1.
 - [x] **Icon rendering bug in GitHub columns** — feed icons now carry the full FA prefix (e.g. `"fas fa-brain"`, `"fab fa-python"`). `FeedColumn` renders `feed.icon` directly. Custom langs default to `"fas fa-code"`.
-- [ ] **Mobile pass.** The locked-viewport / column-scroll layout disables itself under 980px and falls back to natural page scroll, but nothing has been deliberately tuned for phones. Check the masthead wrap, the kebab popover position, the histogram bar tappability, and the rail-above-firehose stacking order.
+- [ ] **Mobile pass (remaining).** Stacking order is fixed (news first, rail below). Still untested on a real phone: masthead wrap behavior with the volume counter, kebab popover position when opened near the right edge, histogram bar tappability at narrow widths.
 
 ## Notes for the worker
 
 - The Cloudflare worker (`cloudflare/rss-proxy/`) currently emits structured `points` / `comments` / `author` / `hnId` for HN and Dev.to. RSS feeds emit `author` only. The aggregated KV blob refreshes on a 15-minute cron, plus background refresh on stale serve.
-- `ALLOWED_ORIGINS` in `src/index.js` is currently locked to production hosts only (`arvindkumarc.github.io`, `arvindc.in`, `www.arvindc.in`). Re-add localhost entries as needed for local dev.
+- `ALLOWED_ORIGINS` in `src/index.js` includes prod hosts (`arvindkumarc.github.io`, `arvindc.in`, `www.arvindc.in`) plus localhost on 4000/8080 for Jekyll/other local dev.

@@ -3,6 +3,10 @@ const ALLOWED_ORIGINS = [
   'https://arvindkumarc.github.io',
   'https://arvindc.in',
   'https://www.arvindc.in',
+  'http://localhost:4000',
+  'http://127.0.0.1:4000',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080',
 ];
 
 function corsHeaders(request) {
