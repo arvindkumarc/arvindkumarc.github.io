@@ -1,9 +1,5 @@
 // Allowed origins that can call this proxy from a browser
-const ALLOWED_ORIGINS = [
-  'https://arvindkumarc.github.io',
-  'https://arvindc.in',
-  'https://www.arvindc.in',
-];
+const ALLOWED_ORIGINS = ['https://arvindkumarc.github.io', 'https://arvindc.in', 'https://www.arvindc.in'];
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin') || '';
@@ -17,7 +13,7 @@ function corsHeaders(request) {
 
 const BROWSER_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  'Accept': 'application/rss+xml, application/atom+xml, application/json, application/xml, text/xml, text/html, */*',
+  Accept: 'application/rss+xml, application/atom+xml, application/json, application/xml, text/xml, text/html, */*',
   'Accept-Language': 'en-US,en;q=0.9',
 };
 
@@ -71,6 +67,45 @@ function pickTag(block, name) {
   return m ? decodeEntities(m[1]) : '';
 }
 
+// --- Description extraction: strip HTML, trim whitespace, truncate to ~40 words ---
+function truncateWords(text, maxWords) {
+  if (!text) return '';
+  maxWords = maxWords || 40;
+  // Strip all HTML tags first, then decode entities
+  let plain = text
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!plain) return '';
+  const words = plain.split(' ');
+  if (words.length <= maxWords) return plain;
+  // Try to break at a sentence boundary in the last ~10 words of the window
+  let cut = maxWords;
+  for (let i = maxWords - 1; i >= Math.max(1, maxWords - 12); i--) {
+    if (/[.!?]$/.test(words[i]) && !/^(Mr|Mrs|Ms|Dr|Prof|vs|etc|st|Inc|Ltd)$/.test(words[i].replace(/[.!?]$/, ''))) {
+      cut = i + 1;
+      break;
+    }
+  }
+  return words
+    .slice(0, cut)
+    .join(' ')
+    .replace(/[,;:]$/, '');
+}
+
+function pickDescription(block) {
+  // RSS <description>, Atom <summary> and <content>, plus content:encoded extension
+  const raw = pickTag(block, 'description') || pickTag(block, 'summary') || pickTag(block, 'content') || pickTag(block, 'content:encoded') || '';
+  return truncateWords(raw, 40);
+}
+
 function pickLink(block) {
   // Atom: <link href="..." rel="alternate"/> or just <link href="..."/>
   const atomAlt = block.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["']/i);
@@ -93,21 +128,18 @@ function parseRSS(xml, sourceName, limit) {
     const title = pickTag(block, 'title');
     if (!title) continue;
     const url = pickLink(block);
-    const date =
-      pickTag(block, 'pubDate') ||
-      pickTag(block, 'published') ||
-      pickTag(block, 'updated') ||
-      pickTag(block, 'dc:date') ||
-      '';
+    const date = pickTag(block, 'pubDate') || pickTag(block, 'published') || pickTag(block, 'updated') || pickTag(block, 'dc:date') || '';
     let author = pickTag(block, 'dc:creator') || pickTag(block, 'author') || '';
     // strip nested <name>/<email> markup that may have leaked
     author = author.replace(/\s+/g, ' ').slice(0, 80);
+    const description = pickDescription(block);
     items.push({
       title,
       url,
       source: sourceName,
       author: author || '',
       date: date || null,
+      description: description || undefined,
     });
   }
   return items;
@@ -128,8 +160,11 @@ async function fetchHN() {
       ids.map((id) =>
         fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { cf: { cacheTtl: 300 } })
           .then((r) => r.json())
-          .catch((e) => { console.log(`[hn] item ${id} err ${e.message}`); return null; })
-      )
+          .catch((e) => {
+            console.log(`[hn] item ${id} err ${e.message}`);
+            return null;
+          }),
+      ),
     );
     const filtered = items.filter((i) => i && i.url);
     console.log(`[hn] ids=${ids.length} fetched=${items.filter(Boolean).length} withUrl=${filtered.length}`);
@@ -170,12 +205,13 @@ async function fetchDevTo() {
             comments: a.comments_count || 0,
             author: (a.user && a.user.name) || '',
             date: a.published_at,
+            description: truncateWords(a.description || '', 40) || undefined,
           });
         });
       } catch (e) {
         console.log(`[devto] tag=${tag} err ${e.message}`);
       }
-    })
+    }),
   );
   return all;
 }
@@ -202,11 +238,7 @@ async function refreshBlob(env) {
   const existing = await env.FEEDS_KV.get(KV_KEY, 'json').catch(() => null);
   const oldItems = (existing && existing.items) || [];
 
-  const groups = await Promise.all([
-    fetchHN(),
-    fetchDevTo(),
-    ...RSS_FEEDS.map((f) => fetchRSSFeed(f)),
-  ]);
+  const groups = await Promise.all([fetchHN(), fetchDevTo(), ...RSS_FEEDS.map((f) => fetchRSSFeed(f))]);
   const fresh = groups.flat();
 
   const byUrl = new Map();
@@ -221,6 +253,10 @@ async function refreshBlob(env) {
       // merge source label if a new feed picked it up
       if (prev.source && item.source && !prev.source.includes(item.source)) {
         prev.source = `${prev.source} · ${item.source}`;
+      }
+      // preserve existing description if the fresh item lacks one
+      if (!item.description && prev.description) {
+        item.description = prev.description;
       }
     } else {
       byUrl.set(item.url, item);
@@ -238,7 +274,17 @@ async function refreshBlob(env) {
   merged.sort((a, b) => new Date(b.date) - new Date(a.date));
   if (merged.length > MAX_ITEMS) merged = merged.slice(0, MAX_ITEMS);
 
-  const blob = { items: merged, lastRefresh: new Date(now).toISOString() };
+  // Strip empty description keys before writing to keep the KV blob lean
+  const blob = {
+    items: merged.map(function (it) {
+      if (!it.description) {
+        const { description, ...rest } = it;
+        return rest;
+      }
+      return it;
+    }),
+    lastRefresh: new Date(now).toISOString(),
+  };
   await env.FEEDS_KV.put(KV_KEY, JSON.stringify(blob));
   return blob;
 }
@@ -253,10 +299,7 @@ async function handleAggregated(request, env, ctx) {
   }
 
   const existing = await env.FEEDS_KV.get(KV_KEY, 'json').catch(() => null);
-  const stale =
-    !existing ||
-    !existing.lastRefresh ||
-    Date.now() - new Date(existing.lastRefresh).getTime() > REFRESH_INTERVAL_MS;
+  const stale = !existing || !existing.lastRefresh || Date.now() - new Date(existing.lastRefresh).getTime() > REFRESH_INTERVAL_MS;
 
   if (stale) {
     if (!existing) {
@@ -300,9 +343,13 @@ async function handleProxy(request) {
   }
 
   const parsed = new URL(rssUrl);
-  if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1' ||
-      parsed.hostname.startsWith('192.168.') || parsed.hostname.startsWith('10.') ||
-      parsed.hostname.startsWith('172.16.')) {
+  if (
+    parsed.hostname === 'localhost' ||
+    parsed.hostname === '127.0.0.1' ||
+    parsed.hostname.startsWith('192.168.') ||
+    parsed.hostname.startsWith('10.') ||
+    parsed.hostname.startsWith('172.16.')
+  ) {
     return new Response(JSON.stringify({ error: 'Internal URLs are not allowed' }), {
       status: 403,
       headers: { ...headers, 'Content-Type': 'application/json' },
@@ -330,13 +377,16 @@ async function handleProxy(request) {
 
     if (!response.ok) {
       const errBody = await response.text().catch(() => '');
-      return new Response(JSON.stringify({
-        error: `Upstream returned ${response.status}`,
-        detail: errBody.slice(0, 200),
-      }), {
-        status: response.status,
-        headers: { ...headers, 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({
+          error: `Upstream returned ${response.status}`,
+          detail: errBody.slice(0, 200),
+        }),
+        {
+          status: response.status,
+          headers: { ...headers, 'Content-Type': 'application/json' },
+        },
+      );
     }
 
     const body = await response.text();

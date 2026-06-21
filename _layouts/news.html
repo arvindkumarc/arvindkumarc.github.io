@@ -367,6 +367,49 @@
     }
     .news-main a:hover .article-title { color: var(--color-accent) !important; }
 
+    /* Article descriptions — 30–50 word snippets from RSS feeds */
+    .article-description {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: normal;
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--color-text-tertiary);
+      margin: 4px 0 6px;
+      padding: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .news-hero-dek {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: normal;
+      font-size: 15px;
+      line-height: 1.45;
+      color: var(--color-text-tertiary);
+      margin: 0 0 12px;
+      padding: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .news-hero-link.is-read .news-hero-dek { opacity: 0.55; }
+    .news-hero-sec-desc {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: normal;
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--color-text-tertiary);
+      margin: 0 0 4px;
+      padding: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .news-hero-secondary > a.is-read .news-hero-sec-desc { opacity: 0.55; }
+
     .news-volume {
       font-family: 'IBM Plex Mono', ui-monospace, monospace;
       font-size: 11px;
@@ -890,6 +933,7 @@
               {isNew && !isRead && <span style={Object.assign({}, newBadgeS, { marginRight: 6 })}>New</span>}
               {item.title}
             </p>
+            {item.description && <p className="article-description">{item.description}</p>}
           </div>
           <div style={articleMetaS}>
             {faviconUrl(item.url) && <img src={faviconUrl(item.url)} alt="" style={faviconS} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.target.style.display = "none"; }} />}
@@ -1170,6 +1214,7 @@
           onClick: function() { if (markRead) markRead(hero.url); },
         },
           React.createElement("h2", { className: "news-hero-title" }, hero.title),
+          hero.description && React.createElement("p", { className: "news-hero-dek" }, hero.description),
           metaStrip(hero, sectionColor)
         ),
         secondaries.length > 0 && React.createElement("div", { className: "news-hero-secondary" },
@@ -1185,6 +1230,7 @@
             },
               React.createElement("p", { className: "news-hero-sec-rank" }, "№ " + String(idx + 2).padStart(2, "0")),
               React.createElement("p", { className: "news-hero-sec-title" }, item.title),
+              item.description && React.createElement("p", { className: "news-hero-sec-desc" }, item.description),
               metaStrip(item, sectionColor)
             );
           })
