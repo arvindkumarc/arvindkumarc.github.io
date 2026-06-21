@@ -933,8 +933,8 @@
               {isNew && !isRead && <span style={Object.assign({}, newBadgeS, { marginRight: 6 })}>New</span>}
               {item.title}
             </p>
-            {item.description && <p className="article-description">{item.description}</p>}
           </div>
+          {item.description && <p className="article-description">{item.description}</p>}
           <div style={articleMetaS}>
             {faviconUrl(item.url) && <img src={faviconUrl(item.url)} alt="" style={faviconS} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.target.style.display = "none"; }} />}
             <span style={metaBrandS(accent)}>{item.source}</span>
