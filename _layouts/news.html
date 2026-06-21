@@ -378,21 +378,19 @@
     }
 
     /* Two-column page layout: feed left, GitHub rail right.
-       Mobile (< 980px): GitHub stacks ABOVE the firehose (finite, scannable). */
+       Mobile (< 980px): news (hero + firehose) leads; GitHub rail stacks below. */
     .news-layout {
       display: grid;
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
-    .news-main { order: 2; min-width: 0; }
-    .news-rail { order: 1; min-width: 0; }
+    .news-main { order: 1; min-width: 0; }
+    .news-rail { order: 2; min-width: 0; }
     @media (min-width: 980px) {
       .news-layout {
         grid-template-columns: minmax(0, 1fr) 380px;
         gap: 2rem;
       }
-      .news-main { order: 1; }
-      .news-rail { order: 2; }
       /* Inside the narrow rail, collapse the 2-col GitHub grid to 1 col */
       .news-rail .news-section-grid {
         grid-template-columns: 1fr;
