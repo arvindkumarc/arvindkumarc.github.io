@@ -41,6 +41,12 @@ const RSS_FEEDS = [
   { name: 'Fly.io', url: 'https://fly.io/blog/feed.xml' },
   { name: 'Anthropic', url: 'https://www.anthropic.com/rss.xml' },
   { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml' },
+  { name: 'GitHub Blog', url: 'https://github.blog/feed/' },
+  { name: 'Vercel', url: 'https://vercel.com/atom' },
+  { name: 'Tailscale', url: 'https://tailscale.com/blog/index.xml' },
+  { name: 'Pragmatic Engineer', url: 'https://blog.pragmaticengineer.com/rss/' },
+  { name: 'Discord Blog', url: 'https://discord.com/blog/rss.xml' },
+  { name: 'Slack Engineering', url: 'https://slack.engineering/feed/' },
 ];
 
 const DEVTO_TAGS = ['ai', 'webdev', 'devops', 'python', 'machinelearning'];
@@ -153,9 +159,9 @@ async function fetchHN() {
       console.log(`[hn] topstories http ${res.status}`);
       return [];
     }
-    // Cap at 25 to stay under the free-tier 50 subrequest/invocation limit
-    // (25 item fetches + 1 list + 14 RSS feeds + 5 devto tags = 45, ≤5 headroom).
-    const ids = (await res.json()).slice(0, 25);
+    // Cap at 20 to stay under the free-tier 50 subrequest/invocation limit
+    // (20 item fetches + 1 list + 20 RSS feeds + 5 devto tags = 46, ≤4 headroom).
+    const ids = (await res.json()).slice(0, 20);
     const items = await Promise.all(
       ids.map((id) =>
         fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { cf: { cacheTtl: 300 } })
