@@ -47,9 +47,19 @@ const RSS_FEEDS = [
   { name: 'Pragmatic Engineer', url: 'https://blog.pragmaticengineer.com/rss/' },
   { name: 'Discord Blog', url: 'https://discord.com/blog/rss.xml' },
   { name: 'Slack Engineering', url: 'https://slack.engineering/feed/' },
+  { name: 'Marc Brooker', url: 'https://brooker.co.za/blog/rss.xml' },
+  { name: 'Armin Ronacher', url: 'https://lucumr.pocoo.org/feed.atom' },
+  { name: 'Thorsten Ball', url: 'https://registerspill.thorstenball.com/feed' },
+  { name: 'Interconnects', url: 'https://www.interconnects.ai/feed' },
+  { name: 'Antithesis', url: 'https://antithesis.com/blog/rss.xml' },
+  { name: 'Oxide', url: 'https://oxide.computer/blog/feed' },
+  { name: 'OpenAI', url: 'https://openai.com/news/rss.xml' },
+  { name: 'Go Blog', url: 'https://go.dev/blog/feed.atom' },
+  { name: 'Mitchell Hashimoto', url: 'https://mitchellh.com/feed.xml' },
 ];
 
 const DEVTO_TAGS = ['ai', 'webdev', 'devops', 'python', 'machinelearning'];
+const DEVTO_MIN_REACTIONS = 40;
 
 // --- Tiny RSS/Atom parser (regex-based; runs without DOMParser) ---
 function decodeEntities(s) {
@@ -159,9 +169,10 @@ async function fetchHN() {
       console.log(`[hn] topstories http ${res.status}`);
       return [];
     }
-    // Cap at 20 to stay under the free-tier 50 subrequest/invocation limit
-    // (20 item fetches + 1 list + 20 RSS feeds + 5 devto tags = 46, ≤4 headroom).
-    const ids = (await res.json()).slice(0, 20);
+    // Cap at 12 to stay under the free-tier 50 subrequest/invocation limit
+    // (12 item fetches + 1 list + 29 RSS feeds + 5 devto tags = 47, ≤3 headroom).
+    // The blob accumulates every refresh, so a lower per-cycle cap costs little.
+    const ids = (await res.json()).slice(0, 12);
     const items = await Promise.all(
       ids.map((id) =>
         fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { cf: { cacheTtl: 300 } })
@@ -195,13 +206,14 @@ async function fetchDevTo() {
   await Promise.all(
     DEVTO_TAGS.map(async (tag) => {
       try {
-        const res = await fetch(`https://dev.to/api/articles?tag=${tag}&per_page=30&top=1`, { headers: BROWSER_HEADERS, cf: { cacheTtl: 600 } });
+        // top=7: best of the week, so only posts that earned traction qualify
+        const res = await fetch(`https://dev.to/api/articles?tag=${tag}&per_page=10&top=7`, { headers: BROWSER_HEADERS, cf: { cacheTtl: 600 } });
         if (!res.ok) {
           console.log(`[devto] tag=${tag} http ${res.status}`);
           return;
         }
-        const data = await res.json();
-        console.log(`[devto] tag=${tag} got=${data.length}`);
+        const data = (await res.json()).filter((a) => (a.positive_reactions_count || 0) >= DEVTO_MIN_REACTIONS);
+        console.log(`[devto] tag=${tag} kept=${data.length}`);
         data.forEach((a) => {
           all.push({
             title: a.title,
@@ -274,6 +286,8 @@ async function refreshBlob(env) {
     if (!it.date) return false; // require a date so undated items don't fill the blob forever
     const t = new Date(it.date).getTime();
     if (isNaN(t)) return false;
+    // retroactively evict low-traction Dev.to items admitted before the quality floor
+    if (it.source && it.source.indexOf('Dev.to') === 0 && (it.points || 0) < DEVTO_MIN_REACTIONS) return false;
     return now - t <= MAX_AGE_MS;
   });
 

@@ -577,6 +577,15 @@
           { id: "pragmatic_engineer", name: "Pragmatic Engineer", type: "rss", icon: "fas fa-newspaper", url: "https://blog.pragmaticengineer.com/rss/" },
           { id: "discord", name: "Discord Blog", type: "rss", icon: "fab fa-discord", url: "https://discord.com/blog/rss.xml" },
           { id: "slack_eng", name: "Slack Engineering", type: "rss", icon: "fab fa-slack", url: "https://slack.engineering/feed/" },
+          { id: "brooker", name: "Marc Brooker", type: "rss", icon: "fas fa-feather", url: "https://brooker.co.za/blog/rss.xml" },
+          { id: "ronacher", name: "Armin Ronacher", type: "rss", icon: "fas fa-feather", url: "https://lucumr.pocoo.org/feed.atom" },
+          { id: "thorstenball", name: "Thorsten Ball", type: "rss", icon: "fas fa-feather", url: "https://registerspill.thorstenball.com/feed" },
+          { id: "interconnects", name: "Interconnects", type: "rss", icon: "fas fa-circle-nodes", url: "https://www.interconnects.ai/feed" },
+          { id: "antithesis", name: "Antithesis", type: "rss", icon: "fas fa-vial", url: "https://antithesis.com/blog/rss.xml" },
+          { id: "oxide", name: "Oxide", type: "rss", icon: "fas fa-microchip", url: "https://oxide.computer/blog/feed" },
+          { id: "openai", name: "OpenAI", type: "rss", icon: "fas fa-robot", url: "https://openai.com/news/rss.xml" },
+          { id: "go_blog", name: "Go Blog", type: "rss", icon: "fab fa-golang", url: "https://go.dev/blog/feed.atom" },
+          { id: "mitchellh", name: "Mitchell Hashimoto", type: "rss", icon: "fas fa-terminal", url: "https://mitchellh.com/feed.xml" },
         ],
       },
       github: {
@@ -870,6 +879,21 @@
         }
       }
       return top.concat(rest);
+    }
+
+    // Per-source daily ration: within each calendar day a source keeps at most
+    // `max` items; the overflow is dropped from the wire (still reachable via
+    // search or the source filter, which bypass this cap).
+    function capPerSourceDay(items, max) {
+      var counts = {};
+      return items.filter(function(it) {
+        if (!it.date) return true;
+        var key = sourceKey(it) + "|" + dayKey(it.date);
+        var used = counts[key] || 0;
+        if (used >= max) return false;
+        counts[key] = used + 1;
+        return true;
+      });
     }
 
     function pickHeroes(items, readUrls, n) {
@@ -1340,10 +1364,14 @@
       var heroes = (q || s || selectedDay || hideRead || hidePinned) ? [] : pickHeroes(allItems, null, 4);
       var heroUrls = new Set(heroes.map(function(h) { return h.url; }));
 
+      // Ration column inches: no source gets more than 5 wire slots per day.
+      // Skipped while searching or source-filtering — those are "find it" modes
+      // where completeness beats curation.
+      var rationed = (q || s) ? filtered : capPerSourceDay(filtered, 5);
       // Diversify the top of the firehose so a single fast source (HN, Dev.to,
       // an ArXiv batch) can't squat the lede. No source > 3 of the first 20.
       // A source filter narrows to one source anyway — skip the cap then.
-      var ordered = s ? filtered : diversifyTop(filtered, 3, 20);
+      var ordered = s ? rationed : diversifyTop(rationed, 3, 20);
       var shownItems = ordered.slice(0, displayCount);
       var hasMore = ordered.length > displayCount;
 

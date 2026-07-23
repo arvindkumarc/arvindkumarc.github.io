@@ -22,5 +22,7 @@ Done — see `_layouts/news.html`:
 
 ## Notes for the worker
 
-- The Cloudflare worker (`cloudflare/rss-proxy/`) currently emits structured `points` / `comments` / `author` / `hnId` for HN and Dev.to. RSS feeds emit `author` only. The aggregated KV blob refreshes on a 15-minute cron, plus background refresh on stale serve.
+- The Cloudflare worker (`cloudflare/rss-proxy/`) currently emits structured `points` / `comments` / `author` / `hnId` for HN and Dev.to. RSS feeds emit `author` only. The aggregated KV blob refreshes on stale serve only (no cron trigger is configured), at most every 15 minutes.
+- Noise controls: Dev.to fetches `top=7` and admits only posts with ≥40 reactions (`DEVTO_MIN_REACTIONS`); each refresh also evicts older low-traction Dev.to items from the blob. Client-side, the wire rations each source to 5 slots per day (`capPerSourceDay`), skipped while searching or source-filtering.
+- Sources added 2026-07-23: Marc Brooker, Armin Ronacher, Thorsten Ball, Interconnects, Antithesis, Oxide, OpenAI, Go Blog, Mitchell Hashimoto. HN per-cycle cap dropped 20→12 for the subrequest budget (1 + 12 + 5 devto + 29 RSS = 47). Tier 2 parked: Ahead of AI (Raschka), Xe Iaso, Hillel Wayne (Buttondown feed), DeepMind, Supabase, Dropbox Tech. No public feed exists for Figma/Linear/Notion/Shopify Eng; Uber and rachelbythebay block non-browser fetchers.
 - `ALLOWED_ORIGINS` in `src/index.js` is locked to prod hosts (`arvindkumarc.github.io`, `arvindc.in`, `www.arvindc.in`). Re-add localhost entries when local dev is needed; revert before deploy.
