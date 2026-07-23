@@ -116,10 +116,14 @@ function truncateWords(text, maxWords) {
     .replace(/[,;:]$/, '');
 }
 
+// Boilerplate that some feeds (e.g. Lobsters) put in <description> instead of a summary
+const JUNK_DESC_RE = /^(comments?|discuss|read more|continue reading\.*|\[link\])$/i;
+
 function pickDescription(block) {
   // RSS <description>, Atom <summary> and <content>, plus content:encoded extension
   const raw = pickTag(block, 'description') || pickTag(block, 'summary') || pickTag(block, 'content') || pickTag(block, 'content:encoded') || '';
-  return truncateWords(raw, 40);
+  const text = truncateWords(raw, 40);
+  return JUNK_DESC_RE.test(text.trim()) ? '' : text;
 }
 
 function pickLink(block) {
@@ -294,10 +298,10 @@ async function refreshBlob(env) {
   merged.sort((a, b) => new Date(b.date) - new Date(a.date));
   if (merged.length > MAX_ITEMS) merged = merged.slice(0, MAX_ITEMS);
 
-  // Strip empty description keys before writing to keep the KV blob lean
+  // Strip empty/boilerplate description keys before writing to keep the KV blob lean
   const blob = {
     items: merged.map(function (it) {
-      if (!it.description) {
+      if (!it.description || JUNK_DESC_RE.test(it.description.trim())) {
         const { description, ...rest } = it;
         return rest;
       }

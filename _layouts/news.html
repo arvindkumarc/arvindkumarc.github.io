@@ -800,6 +800,7 @@
 
     const articleLinkS = { display: "block", padding: "10px 0", borderBottom: "0.5px solid var(--color-border-tertiary)", textDecoration: "none", color: "inherit" };
     const articleTitleS = { margin: "0 0 4px", fontSize: 13.5, fontWeight: 500, lineHeight: 1.4, color: "var(--color-text-primary)" };
+    const compactTitleS = { margin: 0, fontSize: 13, fontWeight: 500, lineHeight: 1.4, color: "var(--color-text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 };
     const articleMetaS = { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" };
     const metaBrandS = (accent) => ({ fontSize: 11, color: accent, fontWeight: 500 });
     const metaTextS = { fontSize: 11, color: "var(--color-text-tertiary)" };
@@ -927,13 +928,21 @@
       try { return new URL(url).hostname.replace(/^www\./, ""); }
       catch (e) { return ""; }
     }
+    // "Vercel" + "vercel.com" says the same thing twice — show the domain only
+    // when it adds information beyond the source name.
+    function redundantDomain(source, domain) {
+      if (!source || !domain) return true;
+      var s = source.toLowerCase().replace(/[^a-z0-9]/g, "");
+      var d = domain.split(".")[0].replace(/[^a-z0-9]/g, "");
+      return !d || s.indexOf(d) !== -1 || d.indexOf(s) !== -1;
+    }
     function faviconUrl(url) {
       var host = domainOf(url);
       if (!host) return "";
       return "https://www.google.com/s2/favicons?domain=" + host + "&sz=32";
     }
 
-    function ArticleCard({ item, accent, isRead, onMarkRead, isPinned, onTogglePin, isFocused, isDimmed, isNew, ...rest }) {
+    function ArticleCard({ item, accent, isRead, onMarkRead, isPinned, onTogglePin, isFocused, isDimmed, isNew, compact, ...rest }) {
       var cardStyle = Object.assign({}, articleLinkS);
       if (isNew && !isRead) { Object.assign(cardStyle, newCardEdgeS); cardStyle.paddingLeft = 10; }
       if (isRead) { cardStyle.opacity = 0.5; }
@@ -952,6 +961,22 @@
         if (onTogglePin) onTogglePin(item.url);
       }
 
+      if (compact) {
+        return (
+          <a href={item.url} target="_blank" rel="noopener noreferrer" style={cardStyle} onClick={handleClick} data-new={isNew && !isRead ? "true" : undefined} {...rest}>
+            <div style={cardRowS}>
+              <button onClick={handlePin} style={pinBtnS} title={isPinned ? "Unpin" : "Pin"}>
+                <i className={pinIconClass} style={pinIconStyle} />
+              </button>
+              <p className="article-title" style={compactTitleS} title={item.title}>
+                {isNew && !isRead && <span style={Object.assign({}, newBadgeS, { marginRight: 6 })}>New</span>}
+                {item.title}
+              </p>
+            </div>
+          </a>
+        );
+      }
+
       return (
         <a href={item.url} target="_blank" rel="noopener noreferrer" style={cardStyle} onClick={handleClick} data-new={isNew && !isRead ? "true" : undefined} {...rest}>
           <div style={cardRowS}>
@@ -959,7 +984,6 @@
               <i className={pinIconClass} style={pinIconStyle} />
             </button>
             <p className="article-title" style={articleTitleS}>
-              {isRead ? "\u2713 " : ""}
               {isNew && !isRead && <span style={Object.assign({}, newBadgeS, { marginRight: 6 })}>New</span>}
               {item.title}
             </p>
@@ -967,8 +991,8 @@
           {item.description && <p className="article-description">{item.description}</p>}
           <div style={articleMetaS}>
             {faviconUrl(item.url) && <img src={faviconUrl(item.url)} alt="" style={faviconS} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.target.style.display = "none"; }} />}
-            <span style={metaBrandS(accent)}>{item.source}</span>
-            {domainOf(item.url) && <span style={domainS}>· {domainOf(item.url)}</span>}
+            <span style={metaBrandS(accent)} title={item.author ? "by " + item.author : undefined}>{item.source}</span>
+            {domainOf(item.url) && !redundantDomain(item.source, domainOf(item.url)) && <span style={domainS}>· {domainOf(item.url)}</span>}
             {item.points > 0 && (
               <span style={statS} title={item.points + " points / likes"}>
                 <i className="fas fa-arrow-up" style={statIconS} aria-hidden="true" />
@@ -979,12 +1003,6 @@
               <span style={statS} title={item.comments + " comments"}>
                 <i className="far fa-comment" style={statIconS} aria-hidden="true" />
                 {formatCount(item.comments)}
-              </span>
-            )}
-            {item.author && (
-              <span style={statS} title={"by " + item.author}>
-                <i className="far fa-user" style={statIconS} aria-hidden="true" />
-                {item.author}
               </span>
             )}
             {item.hnId && domainOf(item.url) !== "news.ycombinator.com" && (
@@ -1093,7 +1111,7 @@
           {open && !loading && !error && visibleItems.length === 0 && <p style={emptyS}>{(q || hideRead || hidePinned) ? "No matches" : "No items found"}</p>}
 
           {open && !loading && visibleItems.map((item, i) => (
-            <ArticleCard key={item.url} item={item} accent={sectionColor} isRead={readUrls ? readUrls.has(item.url) : false} onMarkRead={markRead} isPinned={pinnedUrls ? pinnedUrls.has(item.url) : false} onTogglePin={togglePin} isNew={isNewItem(item, prevVisit)} />
+            <ArticleCard key={item.url} item={item} accent={sectionColor} isRead={readUrls ? readUrls.has(item.url) : false} onMarkRead={markRead} isPinned={pinnedUrls ? pinnedUrls.has(item.url) : false} onTogglePin={togglePin} isNew={isNewItem(item, prevVisit)} compact={feed.type === "gh_rss"} />
           ))}
         </div>
       );
@@ -1110,9 +1128,9 @@
     const shortcutsS = { fontSize: 10, color: "var(--color-text-tertiary)", textAlign: "center", marginTop: 4, opacity: 0.6 };
 
     // --- Histogram of items by day ---
-    const histoWrapS = { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "8px 14px", marginBottom: 10, position: "sticky", top: 0, zIndex: 4 };
-    const histoHeadS = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5, fontSize: 11, color: "var(--color-text-tertiary)" };
-    const histoBarsS = { display: "flex", alignItems: "flex-end", gap: 2, height: 28 };
+    const histoWrapS = { padding: "0 2px", marginBottom: 8 };
+    const histoHeadS = { display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 3, fontSize: 11, color: "var(--color-text-tertiary)" };
+    const histoBarsS = { display: "flex", alignItems: "flex-end", gap: 2, height: 14 };
     const histoBarS = (h, color, active, dim) => ({
       width: "100%",
       height: Math.max(2, h) + "px",
@@ -1162,9 +1180,7 @@
         if (k in buckets) buckets[k]++;
       });
       var max = Math.max(1, ...keys.map(function(k) { return buckets[k]; }));
-      var maxBarH = 24;
-      var firstLabel = new Date(keys[0]).toLocaleDateString([], { month: "short", day: "numeric" });
-      var lastLabel = new Date(keys[keys.length - 1]).toLocaleDateString([], { month: "short", day: "numeric" });
+      var maxBarH = 12;
       var selectedLabel = selectedDay ? new Date(selectedDay).toLocaleDateString([], { month: "short", day: "numeric" }) : null;
       var clearLinkS = { cursor: "pointer", color: sectionColor };
       var handleClear = function() { onSelectDay(null); };
@@ -1172,19 +1188,17 @@
       var newPillS = { cursor: "pointer", color: "#1D9E75", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 };
       var newPillIconS = { fontSize: 9 };
       var prevLabel = prevVisit ? timeAgo(new Date(prevVisit).toISOString()) : null;
+      var headContent = newCount > 0 && prevLabel
+        ? <span style={newPillS} onClick={onJumpNew} title="Jump to first new item">
+            {newCount} new since {prevLabel}
+            <i className="fas fa-arrow-down" style={newPillIconS} aria-hidden="true" />
+          </span>
+        : (selectedLabel
+          ? <span style={clearLinkS} onClick={handleClear}>Showing {selectedLabel} · clear ✕</span>
+          : null);
       return (
-        <div style={histoWrapS}>
-          <div style={histoHeadS}>
-            <span>Activity · last {days}d</span>
-            {newCount > 0 && prevLabel
-              ? <span style={newPillS} onClick={onJumpNew} title="Jump to first new item">
-                  {newCount} new since {prevLabel}
-                  <i className="fas fa-arrow-down" style={newPillIconS} aria-hidden="true" />
-                </span>
-              : (selectedLabel
-                ? <span style={clearLinkS} onClick={handleClear}>Showing {selectedLabel} · clear ✕</span>
-                : <span>{firstLabel} → {lastLabel}</span>)}
-          </div>
+        <div style={histoWrapS} title={"Activity · last " + days + "d · click a bar to filter by day"}>
+          {headContent && <div style={histoHeadS}>{headContent}</div>}
           <div style={histoBarsS}>
             {keys.map(function(k, idx) {
               var h = (buckets[k] / max) * maxBarH;
@@ -1215,7 +1229,7 @@
       return React.createElement("div", { style: articleMetaS },
         faviconUrl(item.url) && React.createElement("img", { src: faviconUrl(item.url), alt: "", style: faviconS, loading: "lazy", referrerPolicy: "no-referrer", onError: function(e) { e.target.style.display = "none"; } }),
         React.createElement("span", { style: metaBrandS(sectionColor) }, item.source),
-        domainOf(item.url) && React.createElement("span", { style: domainS }, "· " + domainOf(item.url)),
+        domainOf(item.url) && !redundantDomain(item.source, domainOf(item.url)) && React.createElement("span", { style: domainS }, "· " + domainOf(item.url)),
         item.points > 0 && React.createElement("span", { style: statS, title: item.points + " points" },
           React.createElement("i", { className: "fas fa-arrow-up", style: statIconS, "aria-hidden": true }),
           formatCount(item.points)
@@ -1667,6 +1681,7 @@
       const [hideRead, setHideRead] = useState(false);
       const [hidePinned, setHidePinned] = useState(false);
       const [filterOpen, setFilterOpen] = useState(false);
+      const [searchOpen, setSearchOpen] = useState(false);
       const { readUrls, pinnedUrls, markRead, togglePin, ready } = usePersistState();
       const prevVisit = useLastVisit();
       const { langs: customLangs, addLang, removeLang } = useCustomLangs();
@@ -1685,6 +1700,17 @@
       useEffect(() => {
         const id = setInterval(refreshAll, 30 * 60 * 1000);
         return () => clearInterval(id);
+      }, []);
+
+      useEffect(() => {
+        function onKey(e) {
+          if (e.key === "/" && !/input|textarea/i.test((document.activeElement || {}).tagName || "")) {
+            e.preventDefault();
+            setSearchOpen(true);
+          }
+        }
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
       }, []);
 
       return (
@@ -1707,6 +1733,58 @@
               <p style={headerSub}>
                 {lastRefresh.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })} · {lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </p>
+              <button
+                onClick={() => setSearchOpen(function(v) { return !v; })}
+                className="news-dash-btn"
+                title="Search (/)"
+                aria-label="Search"
+                style={(searchOpen || searchQuery) ? Object.assign({}, iconBtnS, { color: "var(--color-accent)" }) : iconBtnS}
+              >
+                <i className="fas fa-magnifying-glass" aria-hidden="true" />
+              </button>
+              <span style={{ position: "relative", display: "inline-flex" }}>
+                <button
+                  style={(sourceFilter || hideRead || hidePinned) ? kebabBtnActiveS : kebabBtnS}
+                  onClick={() => setFilterOpen(function(v) { return !v; })}
+                  title="Filters"
+                  aria-label="Filters"
+                >
+                  <i className="fas fa-ellipsis-vertical" aria-hidden="true" />
+                  {(sourceFilter || hideRead || hidePinned) && <span style={filterDotS} />}
+                </button>
+                {filterOpen && (
+                  <div style={popoverS}>
+                    <p style={popoverLabelS}>Source</p>
+                    <div style={filterPillsS}>
+                      <button
+                        style={sourceFilter === '' ? pillActiveS : pillS}
+                        onClick={() => setSourceFilter('')}
+                      >All</button>
+                      {ALL_SOURCES.map(function(src) {
+                        return (
+                          <button
+                            key={src}
+                            style={sourceFilter === src ? pillActiveS : pillS}
+                            onClick={() => setSourceFilter(sourceFilter === src ? '' : src)}
+                          >{src}</button>
+                        );
+                      })}
+                    </div>
+                    <div style={popoverDividerS} />
+                    <p style={popoverLabelS}>View</p>
+                    <div style={filterPillsS}>
+                      <button
+                        style={hideRead ? pillActiveS : pillS}
+                        onClick={() => setHideRead(function(v) { return !v; })}
+                      >{hideRead ? "✓ Showing unread" : "Hide read"}</button>
+                      <button
+                        style={hidePinned ? pillActiveS : pillS}
+                        onClick={() => setHidePinned(function(v) { return !v; })}
+                      >{hidePinned ? "★ Pinned hidden" : "Hide pinned"}</button>
+                    </div>
+                  </div>
+                )}
+              </span>
               <button onClick={() => window.toggleNewsTheme()} className="news-dash-btn" title="Toggle theme" aria-label="Toggle theme" style={iconBtnS}>
                 <i className="fas fa-circle-half-stroke" aria-hidden="true" />
               </button>
@@ -1716,56 +1794,21 @@
             </div>
           </div>
 
-          <div style={searchRowS}>
-            <input
-              type="text"
-              placeholder="Search across the firehose and trending repos…"
-              style={searchBarS}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button
-              style={(sourceFilter || hideRead || hidePinned) ? kebabBtnActiveS : kebabBtnS}
-              onClick={() => setFilterOpen(function(v) { return !v; })}
-              title="Filters"
-              aria-label="Filters"
-            >
-              <i className="fas fa-ellipsis-vertical" aria-hidden="true" />
-              {(sourceFilter || hideRead || hidePinned) && <span style={filterDotS} />}
-            </button>
-            {filterOpen && (
-              <div style={popoverS}>
-                <p style={popoverLabelS}>Source</p>
-                <div style={filterPillsS}>
-                  <button
-                    style={sourceFilter === '' ? pillActiveS : pillS}
-                    onClick={() => setSourceFilter('')}
-                  >All</button>
-                  {ALL_SOURCES.map(function(src) {
-                    return (
-                      <button
-                        key={src}
-                        style={sourceFilter === src ? pillActiveS : pillS}
-                        onClick={() => setSourceFilter(sourceFilter === src ? '' : src)}
-                      >{src}</button>
-                    );
-                  })}
-                </div>
-                <div style={popoverDividerS} />
-                <p style={popoverLabelS}>View</p>
-                <div style={filterPillsS}>
-                  <button
-                    style={hideRead ? pillActiveS : pillS}
-                    onClick={() => setHideRead(function(v) { return !v; })}
-                  >{hideRead ? "✓ Showing unread" : "Hide read"}</button>
-                  <button
-                    style={hidePinned ? pillActiveS : pillS}
-                    onClick={() => setHidePinned(function(v) { return !v; })}
-                  >{hidePinned ? "★ Pinned hidden" : "Hide pinned"}</button>
-                </div>
-              </div>
-            )}
-          </div>
+          {(searchOpen || searchQuery) && (
+            <div style={searchRowS}>
+              <input
+                type="text"
+                placeholder="Search across the firehose and trending repos…"
+                style={searchBarS}
+                value={searchQuery}
+                autoFocus
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") { setSearchQuery(''); setSearchOpen(false); }
+                }}
+              />
+            </div>
+          )}
 
           <div className="news-layout news-layout-fill">
             <div className="news-main">
