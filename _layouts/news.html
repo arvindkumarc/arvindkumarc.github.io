@@ -1595,6 +1595,7 @@
     const searchBarS = { flex: 1, padding: "8px 12px", fontSize: 13, border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text-primary)", outline: "none" };
     const kebabBtnS = { width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "var(--color-background-primary)", color: "var(--color-text)", cursor: "pointer", flexShrink: 0, position: "relative" };
     const kebabBtnActiveS = Object.assign({}, kebabBtnS, { borderColor: "var(--color-accent)", color: "var(--color-accent)" });
+    const kebabWrapS = { position: "relative", display: "inline-flex" };
     const filterDotS = { position: "absolute", top: 4, right: 4, width: 6, height: 6, borderRadius: "50%", background: "var(--color-accent)" };
     const popoverS = { position: "absolute", top: "calc(100% + 6px)", right: 0, minWidth: 240, maxWidth: "min(360px, calc(100vw - 24px))", background: "var(--color-bg-card)", border: "0.5px solid var(--color-border)", borderRadius: 10, padding: "10px 12px", boxShadow: "0 6px 24px rgba(0,0,0,0.08)", zIndex: 50 };
     const popoverLabelS = { fontSize: 10, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.6px", margin: "2px 0 6px" };
@@ -1742,7 +1743,7 @@
               >
                 <i className="fas fa-magnifying-glass" aria-hidden="true" />
               </button>
-              <span style={{ position: "relative", display: "inline-flex" }}>
+              <span style={kebabWrapS}>
                 <button
                   style={(sourceFilter || hideRead || hidePinned) ? kebabBtnActiveS : kebabBtnS}
                   onClick={() => setFilterOpen(function(v) { return !v; })}
